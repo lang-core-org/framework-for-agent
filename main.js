@@ -1,14 +1,35 @@
 /*
-framework by me, finished by Claude
+THIS FILE framework by me, finished by Claude
+THIS REPO LICENSE at https://afw.lang-core.org/LICENSE
+*/
+
+/*
+GAT  represent `GitHub REST "Get a tree"` in following
+
 return Promise resolved as flatten list,
-which element is a full url for special file
+which element is a full url for first-level entry of the repo
+(folder or file, as shown on the repo home page, not recursive), like:
 
-.nojekyll, CNAME and README.md are excluded.
+https://afw.lang-core.org/<name>?type=<type>&note=<note>&depend=<depend>&hash=<hash>
 
-Example result (a list containing the license file):
-  [
-    "https://afw.lang-core.org/LICENSE"
-  ]
+<name>
+     file name or package name, depends on <type>
+<type> 
+     `package`   GAT returns type === "tree" , for local
+     `file`      GAT returns type === "blob", usually for linked in webpage
+<note>
+     content in () of <name>,
+     which usually used as description,
+     maybe empty
+<depend>
+     content in [] of <name>,
+     which is <name> split by ` `,
+     maybe empty
+<hash>
+     hash for afw.lang-core.org/<name> represented files
+     definition of <hash>: value of `sha` in GAT returns
+
+.nojekyll, CNAME, README.md and LICENSE are excluded.
 */
 function main() {
   const root = `afw.lang-core.org`;
@@ -19,7 +40,8 @@ function main() {
     [
       ".nojekyll",
       "CNAME",
-      "README.md"
+      "README.md",
+      "LICENSE"
     ]
   );
 
@@ -54,4 +76,20 @@ function main() {
       }
     }
   );
+}
+
+/*
+@param url  full url returned from func main
+@param fwrite (relative_path,content) => Promise
+fwrite is write content in relative path, return a Promise resolved if success 
+e.g. fwrite("./foo/bar.txt","hello") will write "hello" in "./foo/bar.txt"
+@param fhash (root_path) => Promise
+calculate hash for root_path in local, 
+return Promise resloved a string (hash) if success calculate,
+special resoved "" if root_path absent
+e.g. fhash("foo.js") calcuate hash for "foo.js" in local
+hash: see more at func main
+*/
+function clone(url,fwrite,fhash){
+  
 }
