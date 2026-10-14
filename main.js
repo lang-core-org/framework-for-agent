@@ -3,7 +3,7 @@ framework by me, finished by Claude
 return Promise resolved as flatten list,
 which element is a full url for special file
 
-CNAME and README.md are excluded.
+.nojekyll, CNAME and README.md are excluded.
 
 Example result (a list containing the license file):
   [
@@ -15,7 +15,13 @@ function main() {
   const owner = "lang-core-org";
   const repo = "framework-for-agent";
 
-  const excluded = new Set(["CNAME", "README.md"]);
+  const excluded = new Set(
+    [
+      ".nojekyll",
+      "CNAME",
+      "README.md"
+    ]
+  );
 
   return fetch(
     `https://api.github.com/repos/${owner}/${repo}/git/trees/HEAD?recursive=1`,
