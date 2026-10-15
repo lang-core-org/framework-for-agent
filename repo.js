@@ -17,13 +17,19 @@ class repo{
      constructor(nano_repo){
           
           if(nano_repo === ""){
-               this.#nano_repo_local = Promise.reslove(new Set());
+               this.#nano_repo_local = Promise.resolve(new Map());
           }else{
                this.#nano_repo_local = Promise.all(
-                    nano_repo.split(" ").map(repo.#checked_nano_repo_name)
+                    nano_repo.split(" ")
+                             .map(repo.#checked_nano_repo_name)
+               ).then(
+                    (ls) => new Map(
+                         ls.map( (name) => [name,repo.#sync_job] )
+                    )
                );
           }
 
+          //other init
           
      }
      
@@ -70,12 +76,22 @@ class repo{
           }else{
                let ts = this.#timestamp;
                this.#timestamp = null;
+               let sync_file = new Set();
 
+               let fsync = (nano_repo) => {
+                    
+               };
+
+
+
+               
+               for(let [name,job] of this.#nano_repo_local){
+                    job(fclear,???)(name);
+               }
                
           }
                
      }
-
 
      /*
      nano_repo
@@ -113,7 +129,7 @@ class repo{
           return repo.#groups_nano_repo_name(nano_repo)
                      .then(
                           ({depends}) => new Set(
-                               depends.split("__").slice(1)
+                               (depends ?? "").split("__").slice(1)
                           )
                      );
      }
@@ -122,7 +138,7 @@ class repo{
 
 
      static #nano_repo_name_reg =
-     /^(?<lang>[A-Za-z]+[0-9]*)__(?<repo_name>[A-Za-z]+(_[A-Za-z]+)*)(?<depends>__[A-Za-z]+(_[A-Za-z]+)*)*$/;
+     /^(?<lang>[A-Za-z]+[0-9]*)__(?<repo_name>[A-Za-z]+(_[A-Za-z]+)*)(?<depends>(__[A-Za-z]+(_[A-Za-z]+)*)*)$/;
      
      static #checked_nano_repo_name(name){
          if(
@@ -130,7 +146,7 @@ class repo{
                    repo.#nano_repo_name_reg
               ) === true
          ){
-             return Promise.reslove(name);
+             return Promise.resolve(name);
          }else{
               return Promise.reject(
                    `${name} is not nano repo name, current ....`
@@ -144,6 +160,15 @@ class repo{
                      .then(
                           (N) => repo.#nano_repo_name_reg.exec(N).groups
                      );
+     }
+
+
+     static #sync_job(fremove,fsync){
+          return fsync;
+     }
+     
+     static #remove_job(fremove,fsync){
+          return fremove;
      }
      
 }
