@@ -91,17 +91,32 @@ class repo{
                     ]
                ) => {
                     this.#timestamp = Promise.reject("expired ...");
+                    let remove_repo = new Set();
+                    let fremove = (nano_repo) => remove_repo.add(nano_repo);
+                    
                     let sync_file = new Set();
                     let fsync = (nano_repo) => {
-                         if(remote.has(repo_n === false)){
-                              fclear
+                         fremove(nano_repo);
+                         if(remote.has(nano_repo)=== false){
+                              return Promise.reject("depend remote absent ...");
                          }else{
-                              
                               for(let path of remote[nano_repo]){
                                    sync_file.add(path);
                               }
+                              
+                              return repo.get_depend_repo_name(nano_repo)
+                                         .then(
+                                              (depends) => {
+                                                   //// find and loacte
+                                              }
+                                        ).then(
+                                              (depend_nano_repo) => 
+                                                   Promise.all(
+                                                        depend_nano_repo.map( fsync )
+                                                   )
+                                         );
 
-                              for(let depend_repo of
+                              for(let depend_repo of repo.
 
 
 
@@ -111,10 +126,9 @@ class repo{
                          }
                     };
                     
-                    
-                    for(let [name,job] of local){
-                    job(fclear,fsync)(name);
-               }
+                    for(let [nano_repo,job] of local){
+                         job(fremove,fsync)(nano_repo);
+                    }
                }
           );
                
