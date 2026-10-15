@@ -27,7 +27,9 @@ class repo{
                          ls.map( 
                               (name) => [
                                    name,
-                                   repo.#sync_job
+                                   repo.#auto_job(
+                                        this.#nano_repo_remote
+                                   )
                               ]
                          )
                     )
@@ -74,6 +76,7 @@ class repo{
          Promise resolved if success
      NOTE
          sync_nano_repo should always override local
+         sync_nano_repo is a FINALLY METHOD of this class
      */
      sync_nano_repo(fclear,fwrite){
           Promise.all(
@@ -88,7 +91,7 @@ class repo{
                          (K) => Promise.all(
                               K.map(
                                    (k) => Promise.all(
-                                        [repo.get_repo_name(k),k]
+                                        [ repo.get_repo_name(k), k]
                                    )
                               )
                          )
@@ -110,7 +113,7 @@ class repo{
                     let sync_file = new Set();
                     let fsync = (nano_repo) => {
                          fremove(nano_repo);
-                         if(remote.has(nano_repo)=== false){
+                         if(remote.has(nano_repo) === false){
                               return Promise.reject("depend remote absent ...");
                          }else{
                               for(let path of remote[nano_repo]){
@@ -127,25 +130,73 @@ class repo{
                                                    Promise.all(
                                                         depend_nano_repo.map( fsync )
                                                    )
-                                         );
-
-                              
-
-
-
-
-
-                                  
+                                         ); 
                          }
                     };
                     
-                    for(let [nano_repo,job] of local){
-                         job(fremove,fsync)(nano_repo);
-                    }
+                    
+                    return Promise.all(
+                         [...local].map(
+                              ( [nano_repo,job] ) => job(fremove,fsync)(nano_repo)
+                         )
+                    ).then(
+                         () => {
+                              //actual download & write
+                         }
+                    );
                }
           );
                
      }
+
+
+
+     /*
+     nano_repo
+         nano repo name returned by list_nano_repo
+     return
+         Promise reloved if success planning to required
+     */
+     require_nano_repo(nano_repo){
+          return repo.#checked_nano_repo_name(nano_repo)
+                     .then(
+                          (R) => {
+                               this.#nano_repo_local.set(
+                                    R,
+                                    repo.#sync_job
+                               );
+                               return null;
+                          }
+                     );
+     }
+
+     /*
+     nano_repo
+         nano repo name returned by list_nano_repo
+     return
+         Promise reloved if success planning to removed
+     */
+     remove_nano_repo(nano_repo){
+          return repo.#checked_nano_repo_name(nano_repo)
+                     .then(
+                          (R) => {
+                               this.#nano_repo_local.set(
+                                    R,
+                                    repo.#remove_job
+                               );
+                               return null;
+                          }
+                     );
+     }
+     
+
+
+
+
+
+
+
+     
 
      /*
      nano_repo
@@ -223,6 +274,19 @@ class repo{
      
      static #remove_job(fremove,fsync){
           return fremove;
+     }
+
+     static #auto_job(remote){
+          return (fremove,fsync) => (nano_repo) =>
+               remote.then(
+                    (R) => {
+                         if( R.has(nano_repo) === true){
+                              return fsync(nano_repo);
+                         }else{
+                              return fremove(nano_repo);
+                         }
+                    }
+               );
      }
      
 }
