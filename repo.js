@@ -4,7 +4,10 @@ THIS REPO LICENSE at https://afw.lang-core.org/LICENSE
 */
 class repo{
 
-     #timestamp = Promise.reject("unavailable ...").catch( ()=>{} );
+     static #root = "afw.lang-core.org";
+     static #github = "lang-core-org/framework-for-agent";
+
+     #timestamp;
      #nano_repo_remote;
      #linker;
      #nano_repo_local;
@@ -18,48 +21,55 @@ class repo{
      */
      constructor(manifest){
 
-          //init timestamp
+          this.#timestamp = repo.#quiet(
+               repo.#fetch_stamp()
+          );
 
-          //init remote, by the way checked name, repo-name identify 
+          this.#nano_repo_remote = repo.#quiet(
+               this.#timestamp.then(
+                    () => repo.#fetch_tree()
+               ).then(
+                    (tree) => repo.#build_remote(tree)
+               )
+          );
 
+          this.#linker = repo.#quiet(
+               this.#nano_repo_remote.then(
+                    (R) => Promise.all(
+                         [...R.keys()].map(
+                              (k) => repo.get_repo_name(k).then(
+                                   (N) => [N, k]
+                              )
+                         )
+                    )
+               ).then(
+                    (L) => new Map(L)
+               )
+          );
 
-          this.#linker = this.#nano_repo_remote.then(
-               (R) => [...R.keys()]
-          ).then(
-               (K) => Promise.all(
-                    K.map(
-                         (k) => Promise.all(
-                              [ repo.get_repo_name(k), k]
+          this.#nano_repo_local = repo.#quiet(
+               Promise.all(
+                    manifest.map(repo.get_repo_name)
+               ).then(
+                    (repo_name_ls) => this.#linker.then(
+                         (linker) => repo_name_ls.map(
+                              (N) => linker.get(N) ?? N
+                         )
+                    )
+               ).then(
+                    (nano_repo_ls) => new Map(
+                         nano_repo_ls.map(
+                              (name) => [
+                                   name,
+                                   repo.#auto_job(
+                                        this.#nano_repo_remote
+                                   )
+                              ]
                          )
                     )
                )
-          ).then(
-               (L) => new Map(L)
-          );
-          
-          this.#nano_repo_local = Promise.all(
-               manifest.map(repo.get_repo_name)
-          ).then(
-               (repo_name_ls) => this.#linker.then(
-                    (linker) => repo_name_ls.map(
-                         (N) => linker.get(N) ?? N
-                    )
-               )
-          ).then(
-               (nano_repo_ls) => new Map(
-                    nano_repo_ls.map(
-                         (name) => [
-                              name,
-                              repo.#auto_job(
-                                   this.#nano_repo_remote
-                              )
-                         ]
-                    )
-               )
           );
 
-          
-          
      }
      
      /*
@@ -109,8 +119,13 @@ class repo{
          sync_nano_repo is a FINALLY METHOD of this class
      */
      sync_nano_repo(fwrite,fcommit){
-          let T = this.#timestamp;
-          this.#timestamp = Promise.reject("expired ...").catch(() => {});
+          const T = this.#timestamp;
+          this.#timestamp = repo.#quiet(
+               Promise.reject(
+                    "Expired: sync_nano_repo can be called only once per repo object. Create a new repo() to sync again."
+               )
+          );
+
           return Promise.all(
                [
                     T,
@@ -127,43 +142,80 @@ class repo{
                          linker
                     ]
                ) => {
-                    
-                    let sync_repo = new Set();
-                    let sync_file = new Set();
-                    let fsync = (nano_repo) => {
+
+                    const sync_repo = new Set();
+                    const sync_file = new Set();
+
+                    const fsync = (nano_repo) => {
                          if(remote.has(nano_repo) === false){
-                              return Promise.reject("depend remote absent ...").catch(()=>{});
-                         }else if (sync_repo.has(nano_repo) === false){
+                              return Promise.reject(
+                                   `Nano repo "${nano_repo}" not found in the remote repo. See list_nano_repo().`
+                              );
+                         }else if(sync_repo.has(nano_repo) === false){
                               sync_repo.add(nano_repo);
-                              
-                              for(let path of remote.get(nano_repo) ){
+
+                              for(const path of remote.get(nano_repo)){
                                    sync_file.add(path);
                               }
-                              
+
                               return repo.get_depend_repo_name(nano_repo)
                                          .then(
-                                              (depends) => [...depends].map( 
-                                                   (t) => linker.get(t) ?? t
-                                              )
-                                        ).then(
-                                              (depend_nano_repo) => 
-                                                   Promise.all(
-                                                        depend_nano_repo.map( fsync )
+                                              (depends) => Promise.all(
+                                                   [...depends].map(
+                                                        (t) => {
+                                                             if(linker.has(t) === true){
+                                                                  return fsync(linker.get(t));
+                                                             }else{
+                                                                  return Promise.reject(
+                                                                       `Dependency "${t}" of "${nano_repo}" not found: no nano repo has <repo-name> "${t}".`
+                                                                  );
+                                                             }
+                                                        }
                                                    )
-                                         ); 
+                                              )
+                                         );
                          }else{
                               return Promise.resolve();
                          }
                     };
-                    
-                    
+
                     return Promise.all(
                          [...local].map(
                               ( [nano_repo,job] ) => job(fsync)(nano_repo)
                          )
                     ).then(
-                         () => {
-                              //actual download & write
+                         () => Promise.all(
+                              [...sync_file].map(
+                                   (path) => fetch(
+                                        `https://${repo.#root}/` +
+                                        path.split("/").map(encodeURIComponent).join("/") +
+                                        `?v=${encodeURIComponent(ts)}`
+                                   ).then(
+                                        (res) => {
+                                             if(res.ok === true){
+                                                  return res.blob();
+                                             }else{
+                                                  return Promise.reject(
+                                                       `Download failed (${res.status}): ${path}. The site may not have deployed the latest push yet; retry later.`
+                                                  );
+                                             }
+                                        }
+                                   ).then(
+                                        (blob) => fwrite(path,blob)
+                                   )
+                              )
+                         )
+                    ).then(
+                         () => repo.#fetch_stamp()
+                    ).then(
+                         (now) => {
+                              if(now === ts){
+                                   return fcommit();
+                              }else{
+                                   return Promise.reject(
+                                        `The remote repo changed during sync (${ts} -> ${now}). Nothing was committed. Clear TMP and create a new repo() to retry.`
+                                   );
+                              }
                          }
                     );
                }
@@ -177,7 +229,7 @@ class repo{
      nano_repo
          nano repo name returned by list_nano_repo
      return
-         Promise reloved if success planning to required
+         Promise resolved if success planning to required
      */
      require_nano_repo(nano_repo){
           return repo.#checked_nano_repo_name(nano_repo)
@@ -198,7 +250,7 @@ class repo{
      nano_repo
          nano repo name returned by list_nano_repo
      return
-         Promise reloved if success planning to removed
+         Promise resolved if success planning to removed
      */
      remove_nano_repo(nano_repo){
           return repo.#checked_nano_repo_name(nano_repo)
@@ -216,19 +268,11 @@ class repo{
      }
      
 
-
-
-
-
-
-
-     
-
      /*
      nano_repo
          nano repo name returned by list_nano_repo
      return
-         Promise reloved as <lang>
+         Promise resolved as <lang>
      */
      static get_lang(nano_repo){
           return repo.#groups_nano_repo_name(nano_repo)
@@ -241,7 +285,7 @@ class repo{
      nano_repo
          nano repo name returned by list_nano_repo
      return
-         Promise reloved as <repo-name>
+         Promise resolved as <repo-name>
      */
      static get_repo_name(nano_repo){
           return repo.#groups_nano_repo_name(nano_repo)
@@ -254,18 +298,17 @@ class repo{
      nano_repo
          nano repo name returned by list_nano_repo
      return
-         Promise reloved as a set of <depend-repo_name>
+         Promise resolved as a set of <depend-repo-name>
      */
      static get_depend_repo_name(nano_repo){
           return repo.#groups_nano_repo_name(nano_repo)
                      .then(
                           ({depends}) => new Set(
-                               (depends ?? "").split("__").slice(1)
+                               depends.split("__").slice(1)
                           )
                      );
      }
      
-
 
 
      static #nano_repo_name_reg =
@@ -278,7 +321,10 @@ class repo{
              return Promise.resolve(name);
          }else{
               return Promise.reject(
-                   `${name} is not nano repo name, current ....`
+                   `Invalid nano repo name "${name}". ` +
+                   `Expected <lang>__<repo-name>[__<depend-repo-name>...], ` +
+                   `<lang> matches /^[A-Za-z]+[0-9]*$/, each <repo-name> matches /^[A-Za-z]+(_[A-Za-z]+)*$/. ` +
+                   `If it is a first-level folder of the remote repo, rename that folder.`
               );
          }
      }
@@ -289,6 +335,111 @@ class repo{
                      .then(
                           (N) => repo.#nano_repo_name_reg.exec(N).groups
                      );
+     }
+
+
+     static #quiet(promise){
+          promise.catch( () => {} );
+          return promise;
+     }
+
+
+     static #get_json(url){
+          return fetch(
+               url,
+               {
+                    headers: {
+                         Accept: "application/vnd.github+json"
+                    }
+               }
+          ).then(
+               (res) => {
+                    if(res.ok === true){
+                         return res.json();
+                    }else{
+                         return Promise.reject(
+                              `GitHub API request failed (${res.status}): ${url}. ` +
+                              `If 403 or 429, the anonymous rate limit (60 requests/hour) is probably used up; retry later.`
+                         );
+                    }
+               }
+          );
+     }
+
+     static #fetch_stamp(){
+          return repo.#get_json(
+               `https://api.github.com/repos/${repo.#github}`
+          ).then(
+               (data) => {
+                    if(typeof data.pushed_at === "string"){
+                         return data.pushed_at;
+                    }else{
+                         return Promise.reject(
+                              "GitHub API returned no pushed_at for this repo."
+                         );
+                    }
+               }
+          );
+     }
+
+     static #fetch_tree(){
+          return repo.#get_json(
+               `https://api.github.com/repos/${repo.#github}/git/trees/HEAD?recursive=1`
+          ).then(
+               (data) => {
+                    if(data.truncated === true){
+                         return Promise.reject(
+                              "GitHub file tree is truncated: the repo has too many files to list in one request."
+                         );
+                    }else{
+                         return data.tree;
+                    }
+               }
+          );
+     }
+
+     static #build_remote(tree){
+          const names = tree.filter(
+               (i) => i.type === "tree" && i.path.includes("/") === false
+          ).map(
+               (i) => i.path
+          );
+
+          return Promise.all(
+               names.map(
+                    (n) => repo.get_repo_name(n).then(
+                         (N) => [N, n]
+                    )
+               )
+          ).then(
+               (pairs) => {
+                    const seen = new Map();
+                    for(const [N, n] of pairs){
+                         if(seen.has(N) === true){
+                              return Promise.reject(
+                                   `Duplicate <repo-name> "${N}" in "${seen.get(N)}" and "${n}". <repo-name> must be unique; rename one of them.`
+                              );
+                         }else{
+                              seen.set(N, n);
+                         }
+                    }
+
+                    const remote = new Map(
+                         names.map( (n) => [n, []] )
+                    );
+                    for(const i of tree){
+                         const k = i.path.split("/")[0];
+                         if(
+                              i.type === "blob" &&
+                              i.path.includes("/") === true &&
+                              remote.has(k) === true
+                         ){
+                              remote.get(k).push(i.path);
+                         }
+                    }
+                    return remote;
+               }
+          );
      }
 
 
@@ -307,7 +458,7 @@ class repo{
                          if( R.has(nano_repo) === true){
                               return fsync(nano_repo);
                          }else{
-                              return R;
+                              return Promise.resolve();
                          }
                     }
                );
