@@ -7,7 +7,7 @@ class repo{
      #timestamp = Promise.reject("unavailable ...");
      #nano_repo_remote;
      #nano_repo_local;
-
+     #linker;
 
 
      /*
@@ -15,6 +15,10 @@ class repo{
         initially, nano_repo === ""
      */
      constructor(nano_repo){
+
+          //init timestamp
+
+          //init remote, by the way checked name
           
           if(nano_repo === ""){
                this.#nano_repo_local = Promise.resolve(new Map());
@@ -36,7 +40,19 @@ class repo{
                );
           }
 
-          //other init
+          this.#linker = this.#nano_repo_remote.then(
+               (R) => R.keys()
+          ).then(
+               (K) => Promise.all(
+                    K.map(
+                         (k) => Promise.all(
+                              [ repo.get_repo_name(k), k]
+                         )
+                    )
+               )
+          ).then(
+               (L) => new Map(L)
+          );
           
      }
      
@@ -60,17 +76,25 @@ class repo{
          returned Promise should reject and guide how to fix
      */
      list_nano_repo(){
-          
+          return this.#nano_repo_remote(
+               (remote) => [...remote.keys()]
+          );
      }
  
      /*
-     fclear
-         (relative_path) => Promise
-         clear and remove relative_path recursively if existed,
-         return resolved if success
+     TMP
+        a empty folder for fetch temporary
+        (don't forget clear it manually)
+     MAIN
+        a folder where really store nano repo locally
      fwrite
          (relative_path,blob) => Promise
-         write blob into relative_path,
+         write blob into relative_path under TMP,
+         return resolved if success
+     fcommit
+         () => Promise
+         clear MAIN,
+         copy TMP into MAIN,
          return resolved if success
      return 
          Promise resolved if success
@@ -78,24 +102,15 @@ class repo{
          sync_nano_repo should always override local
          sync_nano_repo is a FINALLY METHOD of this class
      */
-     sync_nano_repo(fclear,fwrite){
-          Promise.all(
+     sync_nano_repo(fwrite,fcommit){
+          let T = this.#timestamp;
+          this.#timestamp = Promise.reject("expired ...");
+          return Promise.all(
                [
-                    this.#timestamp,
+                    T,
                     this.#nano_repo_remote,
                     this.#nano_repo_local,
-
-                    this.#nano_repo_remote.then(
-                         (R) => R.keys()
-                    ).then(
-                         (K) => Promise.all(
-                              K.map(
-                                   (k) => Promise.all(
-                                        [ repo.get_repo_name(k), k]
-                                   )
-                              )
-                         )
-                    ).then( (L) => new Map(L) )
+                    this.#linker
                ]
           ).then(
                (
@@ -106,24 +121,21 @@ class repo{
                          linker
                     ]
                ) => {
-                    this.#timestamp = Promise.reject("expired ...");
-                    let remove_repo = new Set();
-                    let fremove = (nano_repo) => remove_repo.add(nano_repo);
+                    
                     
                     let sync_file = new Set();
                     let fsync = (nano_repo) => {
-                         fremove(nano_repo);
                          if(remote.has(nano_repo) === false){
                               return Promise.reject("depend remote absent ...");
                          }else{
-                              for(let path of remote[nano_repo]){
+                              for(let path of remote.get(nano_repo) ){
                                    sync_file.add(path);
                               }
                               
                               return repo.get_depend_repo_name(nano_repo)
                                          .then(
                                               (depends) => depends.map( 
-                                                   (t) => linker[t] ?? t
+                                                   (t) => linker.get(t) ?? t
                                               )
                                         ).then(
                                               (depend_nano_repo) => 
@@ -137,7 +149,7 @@ class repo{
                     
                     return Promise.all(
                          [...local].map(
-                              ( [nano_repo,job] ) => job(fremove,fsync)(nano_repo)
+                              ( [nano_repo,job] ) => job(fsync)(nano_repo)
                          )
                     ).then(
                          () => {
@@ -160,13 +172,15 @@ class repo{
      require_nano_repo(nano_repo){
           return repo.#checked_nano_repo_name(nano_repo)
                      .then(
-                          (R) => {
-                               this.#nano_repo_local.set(
-                                    R,
-                                    repo.#sync_job
-                               );
-                               return null;
-                          }
+                          (R) => this.#nano_repo_local.then(
+                               (local) => {
+                                    local.set(
+                                         R,
+                                         repo.#sync_job
+                                    );
+                                    return null;
+                               }
+                          )
                      );
      }
 
@@ -179,13 +193,15 @@ class repo{
      remove_nano_repo(nano_repo){
           return repo.#checked_nano_repo_name(nano_repo)
                      .then(
-                          (R) => {
-                               this.#nano_repo_local.set(
-                                    R,
-                                    repo.#remove_job
-                               );
-                               return null;
-                          }
+                          (R) => this.#nano_repo_local.then(
+                               (local) => {
+                                    local.set(
+                                         R,
+                                         repo.#remove_job
+                                    );
+                                    return null;
+                               }
+                          )
                      );
      }
      
@@ -268,16 +284,16 @@ class repo{
      }
 
 
-     static #sync_job(fremove,fsync){
+     static #sync_job(fsync){
           return fsync;
      }
      
-     static #remove_job(fremove,fsync){
-          return fremove;
+     static #remove_job(fsync){
+          return (u) => u;
      }
 
      static #auto_job(remote){
-          return (fremove,fsync) => (nano_repo) =>
+          return (fsync) => (nano_repo) =>
                remote.then(
                     (R) => {
                          if( R.has(nano_repo) === true){
