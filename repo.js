@@ -4,7 +4,7 @@ THIS REPO LICENSE at https://afw.lang-core.org/LICENSE
 */
 class repo{
 
-     #timestamp = null; // null represent expired
+     #timestamp = Promise.reject("unavailable ...");
      #nano_repo_remote;
      #nano_repo_local;
 
@@ -24,7 +24,12 @@ class repo{
                              .map(repo.#checked_nano_repo_name)
                ).then(
                     (ls) => new Map(
-                         ls.map( (name) => [name,repo.#sync_job] )
+                         ls.map( 
+                              (name) => [
+                                   name,
+                                   repo.#sync_job
+                              ]
+                         )
                     )
                );
           }
@@ -71,25 +76,47 @@ class repo{
          sync_nano_repo should always override local
      */
      sync_nano_repo(fclear,fwrite){
-          if(this.#timestamp === null){
-               return Promise.reject("this expired ....");
-          }else{
-               let ts = this.#timestamp;
-               this.#timestamp = null;
-               let sync_file = new Set();
+          Promise.all(
+               [
+                    this.#timestamp,
+                    this.#nano_repo_remote,
+                    this.#nano_repo_local
+               ]
+          ).then(
+               (
+                    [
+                         ts,
+                         remote,
+                         local
+                    ]
+               ) => {
+                    this.#timestamp = Promise.reject("expired ...");
+                    let sync_file = new Set();
+                    let fsync = (nano_repo) => {
+                         if(remote.has(repo_n === false)){
+                              fclear
+                         }else{
+                              
+                              for(let path of remote[nano_repo]){
+                                   sync_file.add(path);
+                              }
 
-               let fsync = (nano_repo) => {
+                              for(let depend_repo of
+
+
+
+
+
+                                  
+                         }
+                    };
                     
-               };
-
-
-
-               
-               for(let [name,job] of this.#nano_repo_local){
-                    job(fclear,???)(name);
+                    
+                    for(let [name,job] of local){
+                    job(fclear,fsync)(name);
                }
-               
-          }
+               }
+          );
                
      }
 
