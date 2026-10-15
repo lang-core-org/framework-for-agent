@@ -3,8 +3,28 @@ THIS FILE framework by me, finished by Claude
 THIS REPO LICENSE at https://afw.lang-core.org/LICENSE
 */
 class repo{
-     
-     constructor(){
+
+     #timestamp = null; // null represent expired
+     #nano_repo_remote;
+     #nano_repo_local;
+
+
+
+     /*
+        nano_repo a string that is nano repo name split by " "
+        initially, nano_repo === ""
+     */
+     constructor(nano_repo){
+          
+          if(nano_repo === ""){
+               this.#nano_repo_local = Promise.reslove(new Set());
+          }else{
+               this.#nano_repo_local = Promise.all(
+                    nano_repo.split(" ").map(repo.#checked_nano_repo_name)
+               );
+          }
+
+          
      }
      
      /*
@@ -31,8 +51,6 @@ class repo{
      }
  
      /*
-     nano_repo
-         nano repo name returned by list_nano_repo
      fclear
          (relative_path) => Promise
          clear and remove relative_path recursively if existed,
@@ -44,11 +62,18 @@ class repo{
      return 
          Promise resolved if success
      NOTE
-         sync_nano_repo should always override nano_repo, 
-         and its depend nano repo
+         sync_nano_repo should always override local
      */
-     sync_nano_repo(nano_repo,fclear,fwrite){
-          
+     sync_nano_repo(fclear,fwrite){
+          if(this.#timestamp === null){
+               return Promise.reject("this expired ....");
+          }else{
+               let ts = this.#timestamp;
+               this.#timestamp = null;
+
+               
+          }
+               
      }
 
 
