@@ -80,14 +80,27 @@ class repo{
                [
                     this.#timestamp,
                     this.#nano_repo_remote,
-                    this.#nano_repo_local
+                    this.#nano_repo_local,
+
+                    this.#nano_repo_remote.then(
+                         (R) => R.keys()
+                    ).then(
+                         (K) => Promise.all(
+                              K.map(
+                                   (k) => Promise.all(
+                                        [repo.get_repo_name(k),k]
+                                   )
+                              )
+                         )
+                    ).then( (L) => new Map(L) )
                ]
           ).then(
                (
                     [
                          ts,
                          remote,
-                         local
+                         local,
+                         linker
                     ]
                ) => {
                     this.#timestamp = Promise.reject("expired ...");
@@ -106,9 +119,9 @@ class repo{
                               
                               return repo.get_depend_repo_name(nano_repo)
                                          .then(
-                                              (depends) => {
-                                                   //// find and loacte
-                                              }
+                                              (depends) => depends.map( 
+                                                   (t) => linker[t] ?? t
+                                              )
                                         ).then(
                                               (depend_nano_repo) => 
                                                    Promise.all(
@@ -116,7 +129,7 @@ class repo{
                                                    )
                                          );
 
-                              for(let depend_repo of repo.
+                              
 
 
 
