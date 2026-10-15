@@ -6,8 +6,8 @@ class repo{
 
      #timestamp = Promise.reject("unavailable ...");
      #nano_repo_remote;
-     #nano_repo_local;
      #linker;
+     #nano_repo_local;
 
 
      /*
@@ -18,27 +18,8 @@ class repo{
 
           //init timestamp
 
-          //init remote, by the way checked name
-          
-          if(nano_repo === ""){
-               this.#nano_repo_local = Promise.resolve(new Map());
-          }else{
-               this.#nano_repo_local = Promise.all(
-                    nano_repo.split(" ")
-                             .map(repo.#checked_nano_repo_name)
-               ).then(
-                    (ls) => new Map(
-                         ls.map( 
-                              (name) => [
-                                   name,
-                                   repo.#auto_job(
-                                        this.#nano_repo_remote
-                                   )
-                              ]
-                         )
-                    )
-               );
-          }
+          //init remote, by the way checked name, repo-name identify 
+
 
           this.#linker = this.#nano_repo_remote.then(
                (R) => R.keys()
@@ -54,6 +35,34 @@ class repo{
                (L) => new Map(L)
           );
           
+          if(nano_repo === ""){
+               this.#nano_repo_local = Promise.resolve(new Map());
+          }else{
+               this.#nano_repo_local = Promise.all(
+                    nano_repo.split(" ")
+                             .map(repo.get_repo_name)
+               ).then(
+                    (repo_name_ls) => this.#linker.then(
+                         (linker) => repo_name_ls.map( 
+                              (N) => linker.get(N) ?? N 
+                         )
+                    )    
+               ).then(
+                    (nano_repo_ls) => new Map(
+                         nano_repo_ls.map( 
+                              (name) => [
+                                   name,
+                                   repo.#auto_job(
+                                        this.#nano_repo_remote
+                                   )
+                              ]
+                         )
+                    )
+               );
+          }
+
+          
+          
      }
      
      /*
@@ -67,7 +76,7 @@ class repo{
           lang for this nano repo, matched
           /^[A-Za-z]+[0-9]*$/
      <repo-name>
-          name for summary this nano repo, matched
+          name for summary and identify this nano repo, matched
           /^[A-Za-z]+(_[A-Za-z]+)*$/
      <depend-repo-name>
           <repo-name> of depend nano repo
@@ -122,12 +131,14 @@ class repo{
                     ]
                ) => {
                     
-                    
+                    let sync_repo = new Set();
                     let sync_file = new Set();
                     let fsync = (nano_repo) => {
                          if(remote.has(nano_repo) === false){
                               return Promise.reject("depend remote absent ...");
-                         }else{
+                         }else if (sync_repo.has(nano_repo) === false){
+                              sync_repo.add(nano_repo);
+                              
                               for(let path of remote.get(nano_repo) ){
                                    sync_file.add(path);
                               }
@@ -143,6 +154,8 @@ class repo{
                                                         depend_nano_repo.map( fsync )
                                                    )
                                          ); 
+                         }else{
+                              return Promise.resolve();
                          }
                     };
                     
