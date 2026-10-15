@@ -4,17 +4,19 @@ THIS REPO LICENSE at https://afw.lang-core.org/LICENSE
 */
 class repo{
 
-     #timestamp = Promise.reject("unavailable ...");
+     #timestamp = Promise.reject("unavailable ...").catch( ()=>{} );
      #nano_repo_remote;
      #linker;
      #nano_repo_local;
 
 
      /*
-        nano_repo a string that is nano repo name split by " "
-        initially, nano_repo === ""
+        manifest  list of nano repo name
+        NOTE
+           manifest is collection of first-level folder of MAIN
+           MAIN see it at sync_nano_repo
      */
-     constructor(nano_repo){
+     constructor(manifest){
 
           //init timestamp
 
@@ -22,7 +24,7 @@ class repo{
 
 
           this.#linker = this.#nano_repo_remote.then(
-               (R) => R.keys()
+               (R) => [...R.keys()]
           ).then(
                (K) => Promise.all(
                     K.map(
@@ -35,31 +37,26 @@ class repo{
                (L) => new Map(L)
           );
           
-          if(nano_repo === ""){
-               this.#nano_repo_local = Promise.resolve(new Map());
-          }else{
-               this.#nano_repo_local = Promise.all(
-                    nano_repo.split(" ")
-                             .map(repo.get_repo_name)
-               ).then(
-                    (repo_name_ls) => this.#linker.then(
-                         (linker) => repo_name_ls.map( 
-                              (N) => linker.get(N) ?? N 
-                         )
-                    )    
-               ).then(
-                    (nano_repo_ls) => new Map(
-                         nano_repo_ls.map( 
-                              (name) => [
-                                   name,
-                                   repo.#auto_job(
-                                        this.#nano_repo_remote
-                                   )
-                              ]
-                         )
+          this.#nano_repo_local = Promise.all(
+               manifest.map(repo.get_repo_name)
+          ).then(
+               (repo_name_ls) => this.#linker.then(
+                    (linker) => repo_name_ls.map(
+                         (N) => linker.get(N) ?? N
                     )
-               );
-          }
+               )
+          ).then(
+               (nano_repo_ls) => new Map(
+                    nano_repo_ls.map(
+                         (name) => [
+                              name,
+                              repo.#auto_job(
+                                   this.#nano_repo_remote
+                              )
+                         ]
+                    )
+               )
+          );
 
           
           
@@ -85,7 +82,7 @@ class repo{
          returned Promise should reject and guide how to fix
      */
      list_nano_repo(){
-          return this.#nano_repo_remote(
+          return this.#nano_repo_remote.then(
                (remote) => [...remote.keys()]
           );
      }
@@ -113,7 +110,7 @@ class repo{
      */
      sync_nano_repo(fwrite,fcommit){
           let T = this.#timestamp;
-          this.#timestamp = Promise.reject("expired ...");
+          this.#timestamp = Promise.reject("expired ...").catch(() => {});
           return Promise.all(
                [
                     T,
@@ -135,7 +132,7 @@ class repo{
                     let sync_file = new Set();
                     let fsync = (nano_repo) => {
                          if(remote.has(nano_repo) === false){
-                              return Promise.reject("depend remote absent ...");
+                              return Promise.reject("depend remote absent ...").catch(()=>{});
                          }else if (sync_repo.has(nano_repo) === false){
                               sync_repo.add(nano_repo);
                               
@@ -145,7 +142,7 @@ class repo{
                               
                               return repo.get_depend_repo_name(nano_repo)
                                          .then(
-                                              (depends) => depends.map( 
+                                              (depends) => [...depends].map( 
                                                    (t) => linker.get(t) ?? t
                                               )
                                         ).then(
@@ -276,9 +273,7 @@ class repo{
      
      static #checked_nano_repo_name(name){
          if(
-              name.test(
-                   repo.#nano_repo_name_reg
-              ) === true
+              repo.#nano_repo_name_reg.test(name) === true
          ){
              return Promise.resolve(name);
          }else{
@@ -312,7 +307,7 @@ class repo{
                          if( R.has(nano_repo) === true){
                               return fsync(nano_repo);
                          }else{
-                              return fremove(nano_repo);
+                              return R;
                          }
                     }
                );
