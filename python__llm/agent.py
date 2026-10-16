@@ -128,7 +128,7 @@ HOW TO FINISH
                self.definition = self.assemble_error(e,agent.definition)
         
         if agent.expr == "":
-           self.expr = "" #todo
+           self.expr = ""
         else:
            try:
                self.result = self.exec_expr(agent.expr)
