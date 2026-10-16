@@ -26,7 +26,7 @@ SYSTEM
     this manual for you
 INTERFACE
     {self.func_call_code(["result"])}
-        if exist lasted memory v of {self.func_call_code(["value","v","f"])}
+        if exist latest memory v of {self.func_call_code(["value","v","f"])}
            return {self.list_code(["v"])}
         otherwise 
            return {self.list_code([])}
@@ -43,21 +43,21 @@ INTERFACE
         return string response by human or etc...  
 TODO
     what todo next,
-    mange by you
+    manage by you
 PACKAGE
     a list for package what you require successfully
     in REQUIRE before
 REQUIRE
     a package for {self.lang()} you need to import,
-    FORBIDDEN import in DEFINTION or EXPR,
+    FORBIDDEN import in DEFINITION or EXPR,
     empty means nothing required,
     this field will be empty if before REQUIRE successful,
     otherwise error message attached on the top of before REQUIRE
 REFERENCE
     reference for all function you wrote,
-    mange by you
+    manage by you
 DEFINITION
-    using {self.lang()} to wrote singleton func
+    using {self.lang()} to write singleton func
     depends on PACKAGE, REQUIRE and REFERENCE
     and this time DEFINITION,
     then edit REFERENCE for reference,
@@ -66,11 +66,11 @@ DEFINITION
     otherwise error message attached on the top of before DEFINITION
 RESULT
     result
-         if exist lastest result of {self.func_call_code(["value","v","f"])}
+         if exist latest result of {self.func_call_code(["value","v","f"])}
     null
          this field unavailable
 EXPR
-    using {self.lang()} to wrote singleton expr
+    using {self.lang()} to write singleton expr
     depends on PACKAGE, REQUIRE and REFERENCE
     and this time DEFINITION,
     empty means nothing calculated,
@@ -79,11 +79,11 @@ EXPR
 ------
 HOW TO OUTPUT
     a json include field
-        TODO
-        REFERENCE
-        DEFINITION
-        EXPR
-        REQUIRE
+        TODO: string
+        REFERENCE: string
+        DEFINITION: string
+        EXPR: string
+        REQUIRE: string
 HOW TO FINISH
     empty DEFINITION and empty EXPR and empty REQUIRE
 """
