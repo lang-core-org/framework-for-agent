@@ -21,36 +21,43 @@ class Agent(ABC):
          self.require = require
 
          self.system = \
-"""
+f"""
 SYSTEM
     this manual for you
 TODO
     what todo next,
     mange by you
 PACKAGE
-    a list for package what you require
+    a list for package what you require successfully
     in REQUIRE before
 REFERENCE
     reference for all function you wrote,
     mange by you
 DEFINITION
-    using Python to wrote singleton func
+    using {self.lang()} to wrote singleton func
     depends on REFERENCE, PACKAGE
     and this time DEFINITION,
     then edit REFERENCE for reference,
-    empty means no definition
+    empty means no definition,
+    this field will be empty if before DEFINITION successful,
+    otherwise error message attached on the top of before DEFINITION
 BEFORE
-    value of before expr
+    value of before expr,
+    this field will be empty if before EXPR failed
 EXPR
-    using Python to wrote singleton expr
+    using {self.lang()} to wrote singleton expr
     depends on REFERENCE, PACKAGE
     and this time DEFINITION,
     value of expr should be json str,
-    empty means nothing calculated
+    empty means nothing calculated,
+    this field will be empty if before EXPR successful,
+    otherwise error message attached on the top of before EXPR
 REQUIRE
-    a package name you need to import,
+    a package for {self.lang()} you need to import,
     FORBIDDEN import in DEFINTION or EXPR,
-    empty means nothing required
+    empty means nothing required,
+    this field will be empty if before REQUIRE successful,
+    otherwise error message attached on the top of before REQUIRE
 ------
 HOW TO OUTPUT
     a json has same struct of this whole json
@@ -64,12 +71,15 @@ HOW TO FINISH
               "TODO": self.todo,
               "PACKAGE": self.package,
               "REFERENCE": self.reference,
-              "DEFINITION": "",
+              "DEFINITION": self.defintion,
               "BEFORE": self.before,
-              "EXPR": "",
-              "REQUIRE": ""
+              "EXPR": self.expr,
+              "REQUIRE": self.require
         }
         return prompt
+    
+    def assemble_error(self,e,src):
+        return f"{self.summary_error(e)}\n{src}"
 
     def step(self):
         prompt = self.assemble_prompt()
@@ -78,19 +88,32 @@ HOW TO FINISH
         if agent.definition == "":
            pass
         else:
-           self.def_func(agent.definition)
+           try:
+               self.def_func(agent.definition)
+               self.definition = ""
+           except Exception as e:
+               self.definition = self.assemble_error(e,agent.definition)
         
         if agent.expr == "":
            pass
         else:
-           self.before = self.exec_expr(agent.expr)
+           try:
+               self.before = self.exec_expr(agent.expr)
+               self.expr = ""
+           except Exception as e:
+               self.before = ""
+               self.expr = self.assemble_error(e,agent.expr)
 
         if agent.require == "":
            pass
-        elif self.import_package(agent.require):
-           self.package.append(agent.require)
         else:
-           pass
+            try:
+                self.import_package(agent.require)
+                self.package.append(agent.require)
+                self.require = ""
+            except Exception as e:
+                self.require = self.assemble_error(e,agent.require)
+           
 
         if agent.expr == "" and agent.require == "":
           self.finish(self.before)
@@ -125,4 +148,14 @@ HOW TO FINISH
     @abstractmethod
     def finish(self,last_result: str) -> None:
       ...
+
+    #programm language name
+    @abstractmethod
+    def lang(self) -> str:
+      ...
+    #summary error as comment of self.lang()
+    @abstractmethod
+    def summary_error(self,e: Exception) -> str:
+      ...
+    
     
