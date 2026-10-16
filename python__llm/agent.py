@@ -35,8 +35,7 @@ INTERFACE
     {self.func_call_code(["value","v","f"])}
         v any value
         f a function, {self.func_call_code(["f","v"])} must return a string,
-        which corresponding string literal,
-        e.g. {self.string_literal("content")}
+        the kind of value a string literal like {self.string_literal("content")}
         if {self.func_call_code(["f","v"])} succeeds and returns a string
             remember v, return that string
         otherwise
