@@ -24,12 +24,6 @@ class Agent(ABC):
 f"""
 SYSTEM
     this manual for you
-TODO
-    what todo next,
-    mange by you
-PACKAGE
-    a list for package what you require successfully
-    in REQUIRE before
 INTERFACE
     {self.func_call_code(["result"])}
         if exist lasted memory v of {self.func_call_code(["value","v","f"])}
@@ -46,14 +40,25 @@ INTERFACE
             throw exception
     {self.func_call_code(["ask","question"])}
         question any string
-        return string response by human or etc...
-    
+        return string response by human or etc...  
+TODO
+    what todo next,
+    mange by you
+PACKAGE
+    a list for package what you require successfully
+    in REQUIRE before
+REQUIRE
+    a package for {self.lang()} you need to import,
+    FORBIDDEN import in DEFINTION or EXPR,
+    empty means nothing required,
+    this field will be empty if before REQUIRE successful,
+    otherwise error message attached on the top of before REQUIRE
 REFERENCE
     reference for all function you wrote,
     mange by you
 DEFINITION
     using {self.lang()} to wrote singleton func
-    depends on REFERENCE, PACKAGE
+    depends on PACKAGE, REQUIRE and REFERENCE
     and this time DEFINITION,
     then edit REFERENCE for reference,
     empty means no definition,
@@ -66,20 +71,19 @@ RESULT
          this field unavailable
 EXPR
     using {self.lang()} to wrote singleton expr
-    depends on REFERENCE, PACKAGE
+    depends on PACKAGE, REQUIRE and REFERENCE
     and this time DEFINITION,
     empty means nothing calculated,
     this field will be empty if before EXPR successful,
     otherwise error message attached on the top of before EXPR
-REQUIRE
-    a package for {self.lang()} you need to import,
-    FORBIDDEN import in DEFINTION or EXPR,
-    empty means nothing required,
-    this field will be empty if before REQUIRE successful,
-    otherwise error message attached on the top of before REQUIRE
 ------
 HOW TO OUTPUT
-    a json has same struct of this whole json
+    a json include field
+        TODO
+        REFERENCE
+        DEFINITION
+        EXPR
+        REQUIRE
 HOW TO FINISH
     empty DEFINITION and empty EXPR and empty REQUIRE
 """
@@ -89,11 +93,11 @@ HOW TO FINISH
               "SYSTEM": self.system,
               "TODO": self.todo,
               "PACKAGE": self.package,
+              "REQUIRE": self.require
               "REFERENCE": self.reference,
               "DEFINITION": self.definition,
               "RESULT": self.result,
-              "EXPR": self.expr,
-              "REQUIRE": self.require
+              "EXPR": self.expr
         }
         return prompt
     
@@ -104,6 +108,16 @@ HOW TO FINISH
         prompt = self.assemble_prompt()
         agent = self.think(prompt)
         
+        if agent.require == "":
+           self.require = ""
+        else:
+            try:
+                self.import_package(agent.require)
+                self.package.append(agent.require)
+                self.require = ""
+            except Exception as e:
+                self.require = self.assemble_error(e,agent.require)
+           
         if agent.definition == "":
            self.definition = ""
         else:
@@ -121,19 +135,9 @@ HOW TO FINISH
                self.expr = ""
            except Exception as e:
                self.expr = self.assemble_error(e,agent.expr)
+        
 
-        if agent.require == "":
-           self.require = ""
-        else:
-            try:
-                self.import_package(agent.require)
-                self.package.append(agent.require)
-                self.require = ""
-            except Exception as e:
-                self.require = self.assemble_error(e,agent.require)
-           
-
-        if agent.definition == "" and agent.expr == "" and agent.require == "":
+        if agent.require == "" and agent.definition == "" and agent.expr == "":
           self.finish(self.result)
         else:
           self.todo = agent.todo
@@ -169,7 +173,7 @@ HOW TO FINISH
 
     #finish this workflow (don't forget clear)
     @abstractmethod
-    def finish(self,last_result: str) -> None:
+    def finish(self,last_result: str | None) -> None:
       ...
 
     #programm language name
