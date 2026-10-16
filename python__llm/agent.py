@@ -25,22 +25,25 @@ f"""
 SYSTEM
     this manual for you
 INTERFACE
+    functions already defined in the runtime, usable in DEFINITION and EXPR,
+    never define or redefine them
     {self.func_call_code(["result"])}
-        if exist latest memory v of {self.func_call_code(["value","v","f"])}
-           return {self.list_code(["v"])}
-        otherwise 
+        if some {self.func_call_code(["value","v","f"])} has succeeded
+           return {self.list_code(["v"])}, v of the latest success
+        otherwise
            return {self.list_code([])}
     {self.func_call_code(["value","v","f"])}
         v any value
-        f {self.func_call_code(["f","v"])} return string exactly, which corresponding to JSON "..."
-        if {self.func_call_code(["f","v"])} successfully
-            memory v for {self.func_call_code(["result"])}
-            return {self.func_call_code(["f","v"])}
+        f a function, {self.func_call_code(["f","v"])} must return a string,
+        which corresponding string literal,
+        e.g. {self.string_literal("content")}
+        if {self.func_call_code(["f","v"])} succeeds and returns a string
+            remember v, return that string
         otherwise
-            throw exception
+            throw an error, nothing is remembered
     {self.func_call_code(["ask","question"])}
         question any string
-        return string response by human or etc...  
+        ask the human and wait, return the answer as a string  
 TODO
     what todo next,
     manage by you
@@ -58,20 +61,19 @@ REFERENCE
     manage by you
 DEFINITION
     using {self.lang()} to write singleton func
-    depends on PACKAGE, REQUIRE and REFERENCE
+    depends on INTERFACE, PACKAGE, REQUIRE, REFERENCE and DEFINITION
     and this time DEFINITION,
     then edit REFERENCE for reference,
     empty means no definition,
     this field will be empty if before DEFINITION successful,
     otherwise error message attached on the top of before DEFINITION
 RESULT
-    result
-         if exist latest result of {self.func_call_code(["value","v","f"])}
-    null
-         this field unavailable
+    the string returned by the latest successful {self.func_call_code(["value","v","f"])},
+    kept across steps,
+    JSON null if there is none yet
 EXPR
     using {self.lang()} to write singleton expr
-    depends on PACKAGE, REQUIRE and REFERENCE
+    depends on INTERFACE, PACKAGE, REQUIRE, REFERENCE and DEFINITION
     and this time DEFINITION,
     empty means nothing calculated,
     this field will be empty if before EXPR successful,
@@ -205,6 +207,14 @@ HOW TO FINISH
     @abstractmethod
     def list_code(self, lisp:list[str]) -> str:
       ...
+
+    #assembe string literal for self.lang()
+    #lisp foo is "foo" in lisp
+    @abstractmethod
+    def string_literal(self, lisp:[str]) -> str:
+      ...
+
+    
    
     
     
