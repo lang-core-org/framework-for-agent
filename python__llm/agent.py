@@ -211,7 +211,7 @@ HOW TO FINISH
     #assembe string literal for self.lang()
     #lisp foo is "foo" in lisp
     @abstractmethod
-    def string_literal(self, lisp:[str]) -> str:
+    def string_literal(self, lisp: str) -> str:
       ...
 
     
