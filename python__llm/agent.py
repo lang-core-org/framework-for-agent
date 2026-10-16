@@ -1,22 +1,22 @@
-# framework by me, cowork with claude and Gemini
+# framework by me, cowork with claude, Gemini and DeepSeek
 from __future__ import annotations
 from abc import ABC, abstractmethod
+
+#implement INTERFACE in sandbox
 class Agent(ABC):
     def __init__(
         self,
         todo:str,
-        package:list[str],
         reference:str,
         definition:str,
-        before:str,
         expr:str,
         require:str,
     ):
          self.todo = todo
-         self.package = package
+         self.package = []
          self.reference = reference
          self.definition = definition
-         self.before = before
+         self.result = None
          self.expr = expr
          self.require = require
 
@@ -30,6 +30,24 @@ TODO
 PACKAGE
     a list for package what you require successfully
     in REQUIRE before
+INTERFACE
+    {self.func_call_code(["result"])}
+        if exist lasted memory v of {self.func_call_code(["value","v","f"])}
+           return {self.list_code(["v"])}
+        otherwise 
+           return {self.list_code([])}
+    {self.func_call_code(["value","v","f"])}
+        v any value
+        f func transform v to string
+        if {self.func_call_code(["f","v"])} return string exactly ####
+            memory v for {self.func_call_code(["result"])}
+            return {self.func_call_code(["f","v"])}
+        otherwise
+            throw exception
+    {self.func_call_code(["ask","question"])}
+        question any string
+        return string response by human or etc...
+    
 REFERENCE
     reference for all function you wrote,
     mange by you
@@ -41,14 +59,15 @@ DEFINITION
     empty means no definition,
     this field will be empty if before DEFINITION successful,
     otherwise error message attached on the top of before DEFINITION
-BEFORE
-    value of before expr,
-    this field will be empty if before EXPR failed
+RESULT
+    result
+         if exist lastest result of {self.func_call_code(["value","v","f"])}
+    null
+         this field unavailable
 EXPR
     using {self.lang()} to wrote singleton expr
     depends on REFERENCE, PACKAGE
     and this time DEFINITION,
-    value of expr should be json str,
     empty means nothing calculated,
     this field will be empty if before EXPR successful,
     otherwise error message attached on the top of before EXPR
@@ -62,7 +81,7 @@ REQUIRE
 HOW TO OUTPUT
     a json has same struct of this whole json
 HOW TO FINISH
-    empty EXPR and empty REQUIRE
+    empty DEFINITION and empty EXPR and empty REQUIRE
 """
 
     def assemble_prompt(self):
@@ -72,7 +91,7 @@ HOW TO FINISH
               "PACKAGE": self.package,
               "REFERENCE": self.reference,
               "DEFINITION": self.definition,
-              "BEFORE": self.before,
+              "RESULT": self.result,
               "EXPR": self.expr,
               "REQUIRE": self.require
         }
@@ -86,7 +105,7 @@ HOW TO FINISH
         agent = self.think(prompt)
         
         if agent.definition == "":
-           pass
+           self.definition = ""
         else:
            try:
                self.def_func(agent.definition)
@@ -95,17 +114,16 @@ HOW TO FINISH
                self.definition = self.assemble_error(e,agent.definition)
         
         if agent.expr == "":
-           pass
+           self.expr = "" #todo
         else:
            try:
-               self.before = self.exec_expr(agent.expr)
+               self.result = self.exec_expr(agent.expr)
                self.expr = ""
            except Exception as e:
-               self.before = ""
                self.expr = self.assemble_error(e,agent.expr)
 
         if agent.require == "":
-           pass
+           self.require = ""
         else:
             try:
                 self.import_package(agent.require)
@@ -115,8 +133,8 @@ HOW TO FINISH
                 self.require = self.assemble_error(e,agent.require)
            
 
-        if agent.expr == "" and agent.require == "":
-          self.finish(self.before)
+        if agent.definition == "" and agent.expr == "" and agent.require == "":
+          self.finish(self.result)
         else:
           self.todo = agent.todo
           self.reference = agent.reference
@@ -134,14 +152,19 @@ HOW TO FINISH
       ...
 
     #exec expr safely (in sandbox)
+    #return
+    #  result 
+    #     if exist lastest result of self.func_call_code(["value","v","f"])
+    #  None
+    #     otherwise
     @abstractmethod
-    def exec_expr(self, expr: str) -> str:
+    def exec_expr(self, expr: str) -> str | None:
       ...
 
     #import package safely (in sandbox)
     #suggest ask human first
     @abstractmethod
-    def import_package(self, package: str) -> bool:
+    def import_package(self, package: str) -> None:
       ...
 
     #finish this workflow (don't forget clear)
@@ -153,9 +176,23 @@ HOW TO FINISH
     @abstractmethod
     def lang(self) -> str:
       ...
+    
     #summary error as comment of self.lang()
     @abstractmethod
     def summary_error(self,e: Exception) -> str:
       ...
+
+    #assembe func call form for self.lang()
+    #lisp [f,a,b,...] is (f a b ...) in lisp
+    @abstractmethod
+    def func_call_code(self, lisp:list[str]) -> str:
+      ...
+    
+    #assembe list form for self.lang()
+    #lisp [a,b,...] is '(a b ...) in lisp
+    @abstractmethod
+    def list_code(self, lisp:list[str]) -> str:
+      ...
+   
     
     
