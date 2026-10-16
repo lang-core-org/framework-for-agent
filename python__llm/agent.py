@@ -71,7 +71,7 @@ HOW TO FINISH
               "TODO": self.todo,
               "PACKAGE": self.package,
               "REFERENCE": self.reference,
-              "DEFINITION": self.defintion,
+              "DEFINITION": self.definition,
               "BEFORE": self.before,
               "EXPR": self.expr,
               "REQUIRE": self.require
