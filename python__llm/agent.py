@@ -84,6 +84,8 @@ HOW TO OUTPUT
         DEFINITION: string
         EXPR: string
         REQUIRE: string
+HOW TO FIX BUG
+    output fixed content
 HOW TO FINISH
     empty DEFINITION and empty EXPR and empty REQUIRE
 """
@@ -93,7 +95,7 @@ HOW TO FINISH
               "SYSTEM": self.system,
               "TODO": self.todo,
               "PACKAGE": self.package,
-              "REQUIRE": self.require
+              "REQUIRE": self.require,
               "REFERENCE": self.reference,
               "DEFINITION": self.definition,
               "RESULT": self.result,
