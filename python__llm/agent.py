@@ -32,7 +32,7 @@ INTERFACE
            return {self.list_code([])}
     {self.func_call_code(["value","v","f"])}
         v any value
-        f func transform v to string exactly, which corresponding to JSON "..."
+        f {self.func_call_code(["f","v"])} return string exactly, which corresponding to JSON "..."
         if {self.func_call_code(["f","v"])} successfully
             memory v for {self.func_call_code(["result"])}
             return {self.func_call_code(["f","v"])}
@@ -85,7 +85,13 @@ HOW TO OUTPUT
         EXPR: string
         REQUIRE: string
 HOW TO FIX BUG
-    output fixed content
+    a REQUIRE, DEFINITION or EXPR that starts with an error comment
+    means its previous attempt failed:
+    the comment is the error, the code below it is what failed
+    output the corrected code only, without the error comment
+    (the system attaches it, it is not part of the code)
+    for REQUIRE, output the corrected package name only
+    do not repeat the same content
 HOW TO FINISH
     empty DEFINITION and empty EXPR and empty REQUIRE
 """
