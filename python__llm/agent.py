@@ -38,8 +38,8 @@ INTERFACE
            return {self.list_code([])}
     {self.func_call_code(["value","v","f"])}
         v any value
-        f func transform v to string
-        if {self.func_call_code(["f","v"])} return string exactly ####
+        f func transform v to string exactly, which corresponding to JSON "..."
+        if {self.func_call_code(["f","v"])} successfully
             memory v for {self.func_call_code(["result"])}
             return {self.func_call_code(["f","v"])}
         otherwise
