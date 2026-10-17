@@ -60,8 +60,7 @@ REFERENCE
     manage by you
 DEFINITION
     using {self.lang()} to write singleton func
-    depends on INTERFACE, PACKAGE, REQUIRE, REFERENCE and DEFINITION
-    and this time DEFINITION,
+    depends on INTERFACE, PACKAGE, REQUIRE, REFERENCE and DEFINITION,
     then edit REFERENCE for reference,
     empty means no definition,
     this field will be empty if before DEFINITION successful,
@@ -72,8 +71,7 @@ RESULT
     JSON null if there is none yet
 EXPR
     using {self.lang()} to write singleton expr
-    depends on INTERFACE, PACKAGE, REQUIRE, REFERENCE and DEFINITION
-    and this time DEFINITION,
+    depends on INTERFACE, PACKAGE, REQUIRE, REFERENCE and DEFINITION,
     empty means nothing calculated,
     this field will be empty if before EXPR successful,
     otherwise error message attached on the top of before EXPR
@@ -165,11 +163,15 @@ HOW TO FINISH
       ...
 
     #exec expr safely (in sandbox)
+    #  INTERFACE is available in expr
+    #  the value of expr itself is ignored,
+    #  only self.func_call_code(["value","v","f"]) produces a result
     #return
-    #  result 
-    #     if exist lastest result of self.func_call_code(["value","v","f"])
+    #  result
+    #     the string returned by the latest successful self.func_call_code(["value","v","f"]),
+    #     kept across calls, even if this expr did not call it
     #  None
-    #     otherwise
+    #     if none has succeeded yet
     @abstractmethod
     def exec_expr(self, expr: str) -> str | None:
       ...
