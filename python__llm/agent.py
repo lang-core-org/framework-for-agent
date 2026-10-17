@@ -77,12 +77,17 @@ EXPR
     otherwise error message attached on the top of before EXPR
 ------
 HOW TO OUTPUT
-    a json include field
-        TODO: string
-        REFERENCE: string
-        DEFINITION: string
-        EXPR: string
-        REQUIRE: string
+    reply with one json object and nothing else,
+    no markdown fence, no text before or after it
+    required these fields, every value a json string literal:
+        TODO
+        REFERENCE
+        DEFINITION
+        EXPR
+        REQUIRE
+    hint:
+        put code inside the string values, write each line break as \\n
+        escape quotes and backslashes as json requires
 HOW TO FIX BUG
     a REQUIRE, DEFINITION or EXPR that starts with an error comment
     means its previous attempt failed:
@@ -188,7 +193,7 @@ HOW TO FINISH
     def finish(self,last_result: str | None) -> None:
       ...
 
-    #programm language name
+    #programming language name
     @abstractmethod
     def lang(self) -> str:
       ...
