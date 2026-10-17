@@ -51,6 +51,10 @@ LOG
     a string for previous think,
     this filed will be empty if think successs,
     otherwise, other fileds is latest success think related
+LOG
+    empty if your previous reply was accepted,
+    otherwise why it was rejected as a whole,
+    nothing of it was applied and the other fields are unchanged
 PACKAGE
     a list for package what you require successfully
     in REQUIRE before
@@ -95,13 +99,16 @@ HOW TO OUTPUT
         put code inside the string values, write each line break as \\n
         escape quotes and backslashes as json string literal requires
 HOW TO FIX BUG
+    a LOG that is not empty
+    means your previous reply was rejected as a whole:
+         fix the json and reply again
     a REQUIRE, DEFINITION or EXPR that starts with an error comment
     means its previous attempt failed:
-    the comment is the error, the code below it is what failed
-    output the corrected code only, without the error comment
-    (the system attaches it, it is not part of the code)
-    for REQUIRE, output the corrected package name only
-    do not repeat the same content
+         the comment is the error, the code below it is what failed
+         output the corrected code only, without the error comment
+         (the system attaches it, it is not part of the code)
+         for REQUIRE, output the corrected package name only
+         do not repeat the same content
 HOW TO FINISH
     empty DEFINITION and empty EXPR and empty REQUIRE
 """
@@ -130,7 +137,7 @@ HOW TO FINISH
            agent = self.think(prompt)
            self.log = ""
         except Exception as e:
-            self.log = self.assemble_error(e,"")
+            self.log = self.summary_error(e)
            
         
         if agent.require == "":
@@ -173,6 +180,9 @@ HOW TO FINISH
     #------abstract method------
     
     #return a new Agent
+    #raise
+    #  if the reply cannot be accepted,
+    #  see more at self.system
     @abstractmethod
     def think(self, json_prompt) -> Agent:
       ...
