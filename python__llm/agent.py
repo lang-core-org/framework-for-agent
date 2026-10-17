@@ -6,13 +6,14 @@ from abc import ABC, abstractmethod
 class Agent(ABC):
     def __init__(
         self,
-        todo:str,
-        reference:str,
-        definition:str,
-        expr:str,
-        require:str,
+        todo:str = "",
+        reference:str = "",
+        definition:str = "",
+        expr:str = "",
+        require:str = "",
     ):
          self.todo = todo
+         self.log = ""
          self.package = []
          self.reference = reference
          self.definition = definition
@@ -46,6 +47,10 @@ INTERFACE
 TODO
     what todo next,
     manage by you
+LOG
+    a string for previous think,
+    this filed will be empty if think successs,
+    otherwise, other fileds is latest success think related
 PACKAGE
     a list for package what you require successfully
     in REQUIRE before
@@ -79,15 +84,16 @@ EXPR
 HOW TO OUTPUT
     reply with one json object and nothing else,
     no markdown fence, no text before or after it
-    required these fields, every value a json string literal:
+    these fields are required, every value a json string literal:
         TODO
         REFERENCE
         DEFINITION
         EXPR
         REQUIRE
     hint:
+        empty field is ""
         put code inside the string values, write each line break as \\n
-        escape quotes and backslashes as json requires
+        escape quotes and backslashes as json string literal requires
 HOW TO FIX BUG
     a REQUIRE, DEFINITION or EXPR that starts with an error comment
     means its previous attempt failed:
@@ -104,6 +110,7 @@ HOW TO FINISH
         prompt = {
               "SYSTEM": self.system,
               "TODO": self.todo,
+              "LOG": self.log,
               "PACKAGE": self.package,
               "REQUIRE": self.require,
               "REFERENCE": self.reference,
@@ -118,7 +125,13 @@ HOW TO FINISH
 
     def step(self):
         prompt = self.assemble_prompt()
-        agent = self.think(prompt)
+        
+        try:
+           agent = self.think(prompt)
+           self.log = ""
+        except Exception as e:
+            self.log = self.assemble_error(e,"")
+           
         
         if agent.require == "":
            self.require = ""
@@ -129,6 +142,7 @@ HOW TO FINISH
                 self.require = ""
             except Exception as e:
                 self.require = self.assemble_error(e,agent.require)
+                return None
            
         if agent.definition == "":
            self.definition = ""
