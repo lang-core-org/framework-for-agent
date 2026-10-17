@@ -198,20 +198,20 @@ HOW TO FINISH
     def summary_error(self,e: Exception) -> str:
       ...
 
-    #assembe func call form for self.lang()
+    #assemble func call form for self.lang()
     #lisp [f,a,b,...] is (f a b ...) in lisp
     @abstractmethod
     def func_call_code(self, lisp:list[str]) -> str:
       ...
     
-    #assembe list form for self.lang()
+    #assemble list form for self.lang()
     #lisp [a,b,...] is '(a b ...) in lisp
     @abstractmethod
     def list_code(self, lisp:list[str]) -> str:
       ...
 
-    #assembe string literal for self.lang()
-    #lisp foo is "foo" in lisp
+    #assemble string literal for self.lang()
+    #lisp "foo" is "foo" in lisp
     @abstractmethod
     def string_literal(self, lisp: str) -> str:
       ...
