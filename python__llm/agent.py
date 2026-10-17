@@ -48,10 +48,6 @@ TODO
     what todo next,
     manage by you
 LOG
-    a string for previous think,
-    this filed will be empty if think successs,
-    otherwise, other fileds is latest success think related
-LOG
     empty if your previous reply was accepted,
     otherwise why it was rejected as a whole,
     nothing of it was applied and the other fields are unchanged
@@ -138,6 +134,7 @@ HOW TO FINISH
            self.log = ""
         except Exception as e:
             self.log = self.summary_error(e)
+            return None
            
         
         if agent.require == "":
@@ -149,7 +146,6 @@ HOW TO FINISH
                 self.require = ""
             except Exception as e:
                 self.require = self.assemble_error(e,agent.require)
-                return None
            
         if agent.definition == "":
            self.definition = ""
