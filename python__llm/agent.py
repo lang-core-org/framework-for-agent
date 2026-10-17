@@ -138,7 +138,7 @@ HOW TO FINISH
            self.expr = ""
         else:
            try:
-               self.result = self.exec_expr(agent.expr)
+               self.exec_expr(agent.expr)
                self.expr = ""
            except Exception as e:
                self.expr = self.assemble_error(e,agent.expr)
@@ -149,6 +149,7 @@ HOW TO FINISH
         else:
           self.todo = agent.todo
           self.reference = agent.reference
+          self.result = self.latest_result()
 
     #------abstract method------
     
@@ -163,18 +164,17 @@ HOW TO FINISH
       ...
 
     #exec expr safely (in sandbox)
-    #  INTERFACE is available in expr
-    #  the value of expr itself is ignored,
-    #  only self.func_call_code(["value","v","f"]) produces a result
+    @abstractmethod
+    def exec_expr(self, expr: str) -> None:
+      ...
+    
     #return
-    #  result
-    #     the string returned by the latest successful self.func_call_code(["value","v","f"]),
-    #     kept across calls, even if this expr did not call it
+    #  str
+    #     the string returned by the latest successful self.func_call_code(["value","v","f"])
     #  None
     #     if none has succeeded yet
     @abstractmethod
-    def exec_expr(self, expr: str) -> str | None:
-      ...
+    def latest_result(self) -> str | None
 
     #import package safely (in sandbox)
     #suggest ask human first
