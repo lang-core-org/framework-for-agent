@@ -143,13 +143,13 @@ HOW TO FINISH
            except Exception as e:
                self.expr = self.assemble_error(e,agent.expr)
         
-
+        self.result = self.latest_result()
+        
         if agent.require == "" and agent.definition == "" and agent.expr == "":
           self.finish(self.result)
         else:
           self.todo = agent.todo
           self.reference = agent.reference
-          self.result = self.latest_result()
 
     #------abstract method------
     
@@ -174,7 +174,8 @@ HOW TO FINISH
     #  None
     #     if none has succeeded yet
     @abstractmethod
-    def latest_result(self) -> str | None
+    def latest_result(self) -> str | None:
+        ...
 
     #import package safely (in sandbox)
     #suggest ask human first
