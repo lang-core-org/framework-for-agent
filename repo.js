@@ -15,15 +15,16 @@ class repo{
 
      /*
         manifest  list of nano repo name
-        remap (nano_repo,remote) => list
-             nano_repo  nano repo name which is not found in remote
-             remote  resoved this.list_nano_repo()
+        remap (repo_name,remote) => list
+             repo_name  <repo-name> which is not found in remote
+             remote  resolved this.list_nano_repo()
              return 
-                 list of requires nano repo name instead of nano_repo
+                 list of requires nano repo name instead of repo_name
                  [] if no requires
         NOTE
            manifest is collection of first-level folder of MAIN
            MAIN see it at sync_nano_repo
+           <repo-name> see it at list_nano_repo
      */
      constructor(manifest,remap){
 
