@@ -240,8 +240,3 @@ HOW TO FINISH
     @abstractmethod
     def string_literal(self, lisp: str) -> str:
       ...
-
-    
-   
-    
-    
