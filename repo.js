@@ -15,10 +15,10 @@ class repo{
 
      /*
         manifest  list of nano repo name
-        remap (repo_name,remote) => list
+        remap (repo_name,remote) => Promise
              repo_name  <repo-name> which is not found in remote
              remote  resolved this.list_nano_repo()
-             return 
+             return Promise resolved as list
                  list of requires nano repo name instead of repo_name
                  [] if no requires
         NOTE
@@ -466,8 +466,10 @@ class repo{
                          if( R.has(nano_repo) === true){
                               return fsync(nano_repo);
                          }else{
-                              return Promise.all(
-                                   remap( nano_repo, [...R.keys()] ).map(fsync)
+                              return remap( nano_repo, [...R.keys()] ).then(
+                                   (requires_nano_repo) => Promise.all(
+                                        requires_nano_repo.map(fsync)
+                                   )
                               );
                          }
                     }
