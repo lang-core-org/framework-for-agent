@@ -15,11 +15,17 @@ class repo{
 
      /*
         manifest  list of nano repo name
+        remap (nano_repo,remote) => list
+             nano_repo  nano repo name which is not found in remote
+             remote  resoved this.list_nano_repo()
+             return 
+                 list of requires nano repo name instead of nano_repo
+                 [] if no requires
         NOTE
            manifest is collection of first-level folder of MAIN
            MAIN see it at sync_nano_repo
      */
-     constructor(manifest){
+     constructor(manifest,remap){
 
           this.#timestamp = repo.#quiet(
                repo.#fetch_stamp()
@@ -62,7 +68,8 @@ class repo{
                               (name) => [
                                    name,
                                    repo.#auto_job(
-                                        this.#nano_repo_remote
+                                        this.#nano_repo_remote,
+                                        remap
                                    )
                               ]
                          )
@@ -451,14 +458,16 @@ class repo{
           return (u) => u;
      }
 
-     static #auto_job(remote){
+     static #auto_job(remote,remap){
           return (fsync) => (nano_repo) =>
                remote.then(
                     (R) => {
                          if( R.has(nano_repo) === true){
                               return fsync(nano_repo);
                          }else{
-                              return Promise.resolve();
+                              return Promise.all(
+                                   remap( nano_repo, [...R.keys()] ).map(fsync)
+                              );
                          }
                     }
                );
