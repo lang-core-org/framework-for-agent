@@ -29,7 +29,7 @@ class fworkflow{
   static link_workflow(wf){
     if( wf /*instance of workflow*/){
       let summary = wf.summary();
-      if(forkflow.#workflow.has(summary)){
+      if(fworkflow.#workflow.has(summary)){
         throw Error("linked!");
       }else{
         fworkflow.#workflow.set(
