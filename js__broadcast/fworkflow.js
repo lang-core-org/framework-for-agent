@@ -41,35 +41,80 @@ class fworkflow{
       throw Error("wf is not workflow");
     }
   }
-
+  
   /*
-  start and auto broadcast the workflow
+  start and auto broadcast workflow
   summary workflow summary
   see more workflow.summary
   */
-  static workflow(summary){
-    let wf = fworkflow.#workflow.get(summary) ?? null;
-    if(wf === null){
+  static start_workflow(summary){
+    return fworflow.#wofkflow(
+      summary,
+      new Set(),
+      new Map()
+    );
+  }
+
+
+
+
+
+
+  
+  static #workflow(
+    summary, //this workflow summary
+    after, //workflow after this workflow
+    before //workflow before this workflow
+  ){
+    let W = fworkflow.#workflow.get(summary) ?? null;
+    if(W === null){
       return Promise.reject(
         Error("workflow no exist");
       );
     }else{
-      return Promise.all(
-        wf.depends().map(fworkflow.workflow)
-      ).then(
-        (lists) => /*type checer*/
-      ).then(
-        (workflows) => wf.run(workflows)
-      ).then(
-        (workflow) => {
-          if(workflow === null){
-            //todo
-          }else{
-            //todo
-          }
+      let D = fworkflow.#workflow_depends(W);
+      let B = new Map(before);
+      
+      for(let d of D){
+        if(B.has(d) === true){
+          //pass
+        }else{
+          let A = new Set(after);
+          A.add(summary);
+          B.set(
+            d,
+            fworkflow.#workflow(d,A,new Map())
+          );
         }
-      );
+      }
+
+      for(let b of B.keys()){
+        
+      }
+
+      
+      
     }
+  }
+
+
+  static #workflow_depends(workflow){
+    return new Set(workflow.depends());
+  }
+
+  static #workflow_notices(workflow){
+    let N = new Set(workflow.notices());
+    let S = workflow.summary();
+    for(let wf of fworkflow.values()){
+      if(
+        fworflow.#workflow_depends(wf).has(S) === true
+      ){
+        N.add(wf);
+      }else{
+        //pass
+      }
+    }
+    return N;
   }
     
   
@@ -98,13 +143,13 @@ class workflow{
 
   /*
     start this workflow
-    workflows
-        list of workflow depends, in this.depends() orders
-        [] for beigin workflow, required this.depends() === []
+    params
+        Map of workflow depends,
+        where keys is new Set(this.depends())
     return Promise
         resolved workflow for next workflow
         resolved null for end workflow
   */
-  /*abstract*/ start(workflows){}
+  /*abstract*/ start(params){}
   
 }
