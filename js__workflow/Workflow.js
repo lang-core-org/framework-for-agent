@@ -44,8 +44,7 @@ class Workflow {
   */
   /*final*/ static workflow_from(THIS){
     if(THIS instanceof Workflow){
-      let PROTO = Object.getPrototypeOf(THIS);
-      return Workflow.#continuous(THIS,PROTO);
+      return Workflow.#continuous(THIS);
     }else{
       return Promise.reject(
         Error(
@@ -111,9 +110,9 @@ class Workflow {
   */
   static finish = Symbol("finish");
   
-  static #continuous(THIS,PROTO){
+  static #continuous(THIS,PROTO = THIS){
     for(
-      /*PASS*/;
+      PROTO = Object.getPrototypeOf(PROTO);
       Object.hasOwn(PROTO, "workflow_this") === false;
       PROTO = Object.getPrototypeOf(PROTO)
     ){}
