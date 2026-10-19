@@ -1,13 +1,13 @@
-/*framework by me,cowork with GPT*/
+/*framework by me, cowork with GPT*/
 
 /*
 Workflow that executes its superclass workflows 
-after itself.
+after itself
 */
 class Workflow {
   
   /*
-    Execute this workflow.
+    Execute this workflow
     `this`  instance of T, where:
           T is class defining this method
     Returns Promise:
@@ -19,13 +19,28 @@ class Workflow {
   /*abstract*/ workflow_this() {
     return Promise.resolve(Workflow.finish);
   }
+
+
+  /*
+    Continuation of this workflow,
+    called on the prototype where workflow has just finished
+
+    `before` is a Promise:
+      fulfilled with no value if the workflow chain succeeds
+      rejected with an Error if the workflow chain fails
+  */
+  /*abstract*/ workflow_continution(before){
+    return before;
+  }
+
   
   /*
-    Execute workflows from THIS 
-    THIS  instance of Workflow
-    Returns Promise:
-      fulfilled with no value if the workflow chain succeeds
-      rejected with an Error if any workflow fails
+    Execute the workflow chain for THIS
+
+    If THIS is a Workflow instance:
+      return the Promise processed by workflow_continution
+    Otherwise:
+      return a rejected Promise with a type error
   */
   /*final*/ static workflow_from(THIS){
     if(THIS instanceof Workflow){
@@ -33,7 +48,9 @@ class Workflow {
       return Workflow.#workflow_from(THIS,PROTO);
     }else{
       return Promise.reject(
-        Error("type error")
+        Error(
+          "Invalid argument: expected Workflow instance"
+        )
       );
     }
   }
@@ -45,17 +62,41 @@ class Workflow {
           case Workflow.continuos:
             return Workflow.#continuos(THIS,PROTO);
           case Workflow.finish:
-            return Workflow.#finish();
+            return Workflow.#finish(
+              THIS,
+              PROTO,
+              Promise.resolve()
+            );
           default:
-            throw Error("illegal signal");
+            return Workflow.#finish(
+              THIS,
+              PROTO,
+              Promise.reject(
+                Error("Invalid workflow signal")
+              )
+            );
         }
       }
     ).catch(
       (e) => {
         if (e instanceof Error) {
-          throw e;
+          return Workflow.#finish(
+            THIS,
+            PROTO,
+            Promise.reject(
+              e
+            )
+          );
         } else {
-          throw Error("Typed error", { cause: e });
+          return Workflow.#finish(
+            THIS,
+            PROTO,
+            Promise.reject(
+              Error(
+                "Workflow execution failed with a non-Error value"
+              )
+            )
+          );
         }
       }
     );
@@ -76,8 +117,11 @@ class Workflow {
     return Workflow.#workflow_from(THIS,SUPER);
   }
   
-  static #finish(){
-    return Promise.reslove();
+  static #finish(THIS,PROTO,result){
+    return PROTO.workflow_continution.call(
+      THIS,
+      result
+    );
   }
 
 }
