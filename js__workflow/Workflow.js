@@ -29,7 +29,7 @@ class Workflow {
       fulfilled with no value if the workflow chain succeeds
       rejected with an Error if the workflow chain fails
   */
-  /*abstract*/ workflow_continution(before){
+  /*abstract*/ workflow_continuation(before){
     return before;
   }
 
@@ -121,7 +121,7 @@ class Workflow {
   }
   
   static #finish(THIS,PROTO,result){
-    return PROTO.workflow_continution.call(
+    return PROTO.workflow_continuation.call(
       THIS,
       result
     );
