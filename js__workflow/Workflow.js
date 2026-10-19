@@ -115,7 +115,9 @@ class Workflow {
     for(
       /*PASS*/;
       Object.hasOwn(PROTO, "workflow_this") === false;
-      PROTO = Object.getPrototypeOf(PROTO);
+      PROTO = Object.getPrototypeOf(PROTO)
+    ){}
+    
     return Workflow.#workflow_from(THIS,PROTO);
   }
   
