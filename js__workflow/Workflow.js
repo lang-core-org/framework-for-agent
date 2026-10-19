@@ -1,9 +1,5 @@
 /*framework by me, cowork with GPT, Claude*/
 
-/*
-Workflow that executes its superclass workflows 
-after itself
-*/
 class Workflow {
   
   /*
@@ -23,7 +19,9 @@ class Workflow {
 
   /*
     Continuation of this workflow,
-    called on the prototype where workflow has just finished
+    called once per chain on the prototype
+    where workflow has just finished
+    (inherited definition included)
 
     `before` is a Promise:
       fulfilled with no value if the workflow chain succeeds
@@ -34,15 +32,20 @@ class Workflow {
   }
 
   
-  /*
-    Execute the workflow chain for THIS
+   /*
+    Execute workflow chain from THIS
 
     If THIS is a Workflow instance:
-      return the Promise processed by workflow_continution
+      return the Promise processed by workflow_continuation
     Otherwise:
       return a rejected Promise with a type error
+
+    The workflow chain from THIS
+      executes, in order, each workflow_this defined by a class
+      on the prototype chain of THIS, from THIS up to Workflow,
+      skipping classes that do not define it themselves
   */
-  /*final*/ static workflow_from(THIS){
+  static workflow_from(THIS){
     if(THIS instanceof Workflow){
       return Workflow.#continuous(THIS);
     }else{
@@ -101,7 +104,8 @@ class Workflow {
   }
   
   /*
-    Continue workflow execution with the superclass
+    Continue workflow execution with the nearest superclass
+    that defines workflow_this itself
   */
   static continuous = Symbol("continuous");
   
