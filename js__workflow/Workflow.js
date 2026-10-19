@@ -59,8 +59,8 @@ class Workflow {
     return PROTO.workflow_this.call(THIS).then(
       (signal) => {
         switch(signal){
-          case Workflow.continuos:
-            return Workflow.#continuos(THIS,PROTO);
+          case Workflow.continuous:
+            return Workflow.#continuous(THIS,PROTO);
           case Workflow.finish:
             return Workflow.#finish(
               THIS,
@@ -105,7 +105,7 @@ class Workflow {
   /*
     Continue workflow execution with the superclass
   */
-  static continuous = Symbol("continuos");
+  static continuous = Symbol("continuous");
   
   /*
     Finish workflow execution successfully
