@@ -1,4 +1,4 @@
-/*framework by me, cowork with GPT*/
+/*framework by me, cowork with GPT, Claude*/
 
 /*
 Workflow that executes its superclass workflows 
