@@ -13,7 +13,9 @@ class Workflow {
       Workflow.finish_with(value)
           to finish the workflow chain
       Workflow.abort_with(error)
-          to abort the workflow chain because of error
+          to abort the workflow chain because of error,
+          error must be an Error,
+          otherwise the workflow chain fails with a TypeError
       otherwise
           the workflow chain fails with a RangeError
     Throws an error:
@@ -71,7 +73,7 @@ class Workflow {
   }
   
   static #workflow_from(THIS,param,PROTO) {
-    return Promise.reslove().then(
+    return Promise.resolve().then(
       () => PROTO.workflow_this.call(THIS,param)
     ).then(
       (V) => {
@@ -154,7 +156,8 @@ class Workflow {
 
   /*
     Signal for workflow_this:
-    abort the workflow chain because of error
+    abort the workflow chain because of error,
+    which must be an Error
   */
   static abort_with(error){
     return Promise.reject(error);
@@ -187,7 +190,7 @@ class Workflow {
   }
 
   static #read_signal(value){
-    if(Workflow.#extends_Workflow(value)){
+    if(Workflow.#extends_Workflow(value) === true){
       return value.#signal;
     }else{
       return null;
