@@ -2,15 +2,18 @@
 
 class Workflow {
   
-  /*
+    /*
     Execute this workflow
     `this`  instance of T, where:
           T is class defining this method
-    Returns Promise:
-      fulfilled with a workflow control signal:
-        Workflow.continuous to continue with the superclass
-        Workflow.finish to finish the workflow chain
-      rejected with an Error if execution fails
+    `param` the value passed in
+    Returns one of:
+      Workflow.continuous_with(value)
+          to continue with the superclass
+      Workflow.finish_with(value)
+          to finish the workflow chain
+      Workflow.abort_with(error)
+          to abort the workflow chain because of error
   */
   /*abstract*/ workflow_this(param) {
     return Workflow.finish_with(param);
@@ -22,9 +25,9 @@ class Workflow {
     called once per chain on the prototype
     where workflow has just finished
     (inherited definition included)
-
+    
     `before` is a Promise:
-      fulfilled with value if the workflow chain succeeds
+      fulfilled with the value of finish_with if the workflow chain succeeds
       rejected with an Error if the workflow chain fails
   */
   /*abstract*/ workflow_continuation(before){
@@ -32,8 +35,8 @@ class Workflow {
   }
 
   
-   /*
-    Execute workflow chain from THIS
+     /*
+    Execute workflow chain from THIS with param
 
     If THIS is a Workflow instance:
       return the Promise processed by workflow_continuation
@@ -43,7 +46,9 @@ class Workflow {
     The workflow chain from THIS
       executes, in order, each workflow_this defined by a class
       on the prototype chain of THIS, from THIS up to Workflow,
-      skipping classes that do not define it themselves
+      skipping classes that do not define it themselves.
+      The first receives param, the others receive
+      the value of the previous continuous_with
   */
   static workflow_from(THIS,param){
     if(Workflow.#extends_Workflow(THIS)){
@@ -115,7 +120,9 @@ class Workflow {
   #value = null;
   
   /*
-  continuous....
+    Signal for workflow_this:
+    continue with the nearest superclass that defines workflow_this itself,
+    passing value as its param
   */
   static continuous_with(value){
     return Workflow.#passing(
@@ -125,7 +132,8 @@ class Workflow {
   }
 
   /*
-  finish....
+    Signal for workflow_this:
+    finish the workflow chain with value
   */
   static finish_with(value){
     return Workflow.#passing(
@@ -135,7 +143,8 @@ class Workflow {
   }
 
   /*
-  abort ....
+    Signal for workflow_this:
+    abort the workflow chain because of error
   */
   static abort_with(error){
     return Promise.reject(error);
