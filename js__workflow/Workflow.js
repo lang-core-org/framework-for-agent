@@ -33,15 +33,18 @@ class Workflow {
   /*abstract*/ workflow_continuation(before){
     return before;
   }
-
   
-     /*
+  
+  /*
     Execute workflow chain from THIS with param
 
-    If THIS is a Workflow instance:
+    THIS must be an instance of Workflow or of its subclass,
+    constructed by the class constructor
+
+    If THIS is such an instance:
       return the Promise processed by workflow_continuation
     Otherwise:
-      return a rejected Promise with a type error
+      return a rejected Promise with a TypeError
 
     The workflow chain from THIS
       executes, in order, each workflow_this defined by a class
@@ -55,7 +58,7 @@ class Workflow {
       return Workflow.#continuous(THIS,param);
     }else{
       return Promise.reject(
-        Error(
+        TypeError(
           "Invalid argument: expected Workflow instance"
         )
       );
