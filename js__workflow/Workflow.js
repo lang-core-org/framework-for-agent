@@ -133,6 +133,13 @@ class Workflow {
       value
     );
   }
+
+  /*
+  abort ....
+  */
+  static abort_with(error){
+    return Promise.reject(error);
+  }
   
 
   static #continuous(THIS,param,PROTO = THIS){
