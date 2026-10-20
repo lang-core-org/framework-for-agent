@@ -195,5 +195,10 @@ class Workflow {
       Object.freeze(w)
     );
   }
+
+  static {
+    Object.freeze(this);
+    Object.freeze(this.prototype);
+  }
   
 }
