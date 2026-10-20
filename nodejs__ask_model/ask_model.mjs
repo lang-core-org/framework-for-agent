@@ -31,7 +31,7 @@ export class ask_model {
     this.#fwrite = fwrite;
     this.#ftimestamp = ftimestamp;
     this.#path = path;
-    this.#wait;
+    this.#wait = wait;
   }
 
 
@@ -42,12 +42,12 @@ export class ask_model {
   write val into file and wait model changed file as answer
   */
   async ask(val){
-    await ask_model.#wait_for(
+    await this.#wait_for(
       () => this.#T === null
     );
     this.#T = 0;
     this.#T = await this.#fwrite(this.#path,val);
-    await ask_model.#wait_for(
+    await this.#wait_for(
       async () => this.#T !== (
         await this.#ftimestamp(this.#path)
       )
@@ -57,7 +57,7 @@ export class ask_model {
     return ans;
   }
 
-  static async #wait_for(fcond){
+  async #wait_for(fcond){
     while(await fcond() === false){
       await setTimeout(this.#wait, undefined, { ref: false });
     }
