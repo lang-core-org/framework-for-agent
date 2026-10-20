@@ -51,6 +51,7 @@ export class ask_model {
       () => {
         if(this.#T === ask_model.#idle){
           this.#T = ask_model.#placeholder;
+          return true;
         }else{
           return false;
         }
