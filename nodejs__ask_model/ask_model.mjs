@@ -12,8 +12,8 @@ export class ask_model {
   static #ask = ask_model.#no_question;
   static #ans = null;
 
-  static #has_question(){
-    return typeof(ask_model.#ask) === "string";
+  static #has_question(Q){
+    return typeof(Q) === "string";
   }
 
   /*
@@ -26,16 +26,20 @@ export class ask_model {
   */
   static async ask(Q){
     let q = JSON.stringify(Q);
-    await ask_model.#wait_for(
-      () => ask_model.#ask === ask_model.#no_question
-    );
-    ask_model.#ask = q;
-    await ask_model.#wait_for(
-      () => ask_model.#ask === ask_model.#answered
-    );
-    let ans = ask_model.#ans;
-    ask_model.#ask = ask_model.#no_question;
-    return ans;
+    if(ask_model.#has_question(q) === true){
+      await ask_model.#wait_for(
+        () => ask_model.#ask === ask_model.#no_question
+      );
+      ask_model.#ask = q;
+      await ask_model.#wait_for(
+        () => ask_model.#ask === ask_model.#answered
+      );
+      let ans = ask_model.#ans;
+      ask_model.#ask = ask_model.#no_question;
+      return ans;
+    }else{
+      throw Error("invalid Q");
+    }
   }
 
    /*
@@ -53,7 +57,7 @@ export class ask_model {
       ask_model.#answer = 1;
       for(;;){
         await ask_model.#wait_for(
-          () => ask_model.#has_question()
+          () => ask_model.#has_question(ask_model.#ask)
         );
         ask_model.#ans = yield ask_model.#ask;
         ask_model.#ask = ask_model.#answered;
