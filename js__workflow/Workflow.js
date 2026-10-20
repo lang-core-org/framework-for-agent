@@ -2,7 +2,7 @@
 
 class Workflow {
   
-    /*
+  /*
     Execute this workflow
     `this`  instance of T, where:
           T is class defining this method
@@ -16,8 +16,9 @@ class Workflow {
           to abort the workflow chain because of error
       otherwise
           the workflow chain fails with a RangeError
-    Throws
-       no recommend
+    Throws an error:
+      not recommended,
+      treated as Workflow.abort_with(error)
   */
   /*abstract*/ workflow_this(param) {
     return Workflow.finish_with(param);
@@ -70,13 +71,9 @@ class Workflow {
   }
   
   static #workflow_from(THIS,param,PROTO) {
-    let result;
-    try{
-      result = PROTO.workflow_this.call(THIS,param);
-    }catch(e){
-      result = Promise.reject(e);
-    }
-    return result.then(
+    return Promise.reslove().then(
+      () => PROTO.workflow_this.call(THIS,param)
+    ).then(
       (V) => {
         switch(Workflow.#read_signal(V)){
           case Workflow.#sym_continuous:
