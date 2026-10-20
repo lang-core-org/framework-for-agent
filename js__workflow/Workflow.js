@@ -130,7 +130,7 @@ class Workflow {
     let w = new Workflow();
     w.#signal = signal;
     w.#value = value;
-    return Promise.resovle(
+    return Promise.resolve(
       Object.freeze(w)
     );
   }
