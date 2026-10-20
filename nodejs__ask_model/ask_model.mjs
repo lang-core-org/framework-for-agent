@@ -47,26 +47,29 @@ export class ask_model {
      wait model changed file atomic as answer
   */
   async ask(val){
-    await this.#wait_for(
-      () => {
-        if(this.#T === ask_model.#idle){
-          this.#T = ask_model.#placeholder;
-          return true;
-        }else{
-          return false;
+    try{
+      await this.#wait_for(
+        () => {
+          if(this.#T === ask_model.#idle){
+            this.#T = ask_model.#placeholder;
+            return true;
+          }else{
+            return false;
+          }
         }
-      }
-    );
-    this.#T = 0;
-    this.#T = await this.#fwrite(this.#path,val);
-    await this.#wait_for(
-      async () => this.#T !== (
-        await this.#ftimestamp(this.#path)
-      )
-    );
-    let ans = await this.#fread(this.#path);
-    this.#T = ask_model.#idle;
-    return ans;
+      );
+      this.#T = 0;
+      this.#T = await this.#fwrite(this.#path,val);
+      await this.#wait_for(
+        async () => this.#T !== (
+          await this.#ftimestamp(this.#path)
+        )
+      );
+      
+      return await this.#fread(this.#path);
+    } finally {
+      this.#T = ask_model.#idle;
+    }
   }
 
   async #wait_for(fcond){
