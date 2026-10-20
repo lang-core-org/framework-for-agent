@@ -48,6 +48,7 @@ export class ask_model {
   */
   async ask(val){
     try{
+      
       await this.#wait_for(
         () => {
           if(this.#T === ask_model.#idle){
@@ -58,8 +59,9 @@ export class ask_model {
           }
         }
       );
-      this.#T = 0;
+      
       this.#T = await this.#fwrite(this.#path,val);
+      
       await this.#wait_for(
         async () => this.#T !== (
           await this.#ftimestamp(this.#path)
@@ -67,8 +69,11 @@ export class ask_model {
       );
       
       return await this.#fread(this.#path);
+      
     } finally {
+      
       this.#T = ask_model.#idle;
+      
     }
   }
 
