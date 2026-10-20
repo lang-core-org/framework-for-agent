@@ -1,4 +1,4 @@
-/*framework by me, cowork with Claude, Gemini*/
+/*framework by me, cowork with Claude, Gemini, DeepSeek*/
 
 import { setTimeout } from "node:timers/promises";
 
@@ -25,6 +25,7 @@ export class ask_model {
       a JS value, like null, [1,2], ()=>{} ...
     timestamp
       time for last change of file
+    NOTE: fxxxx should be atomic
   */
   constructor(fread,fwrite,ftimestamp,path,wait = 0){
     this.#fread = fread;
@@ -38,12 +39,22 @@ export class ask_model {
 
   #T = null;
 
+  static #idle = undefined;
+  static #placeholder = null;
+
   /*
-  write val into file and wait model changed file as answer
+     write val into file
+     wait model changed file atomic as answer
   */
   async ask(val){
     await this.#wait_for(
-      () => this.#T === null
+      () => {
+        if(this.#T === ask_model.#idle){
+          this.#T = ask_model.#placeholder;
+        }else{
+          return false;
+        }
+      }
     );
     this.#T = 0;
     this.#T = await this.#fwrite(this.#path,val);
@@ -53,7 +64,7 @@ export class ask_model {
       )
     );
     let ans = await this.#fread(this.#path);
-    this.#T = null;
+    this.#T = ask_model.#idle;
     return ans;
   }
 
