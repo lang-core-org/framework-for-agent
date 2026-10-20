@@ -6,11 +6,11 @@ export class ask_model {
 
   static #answer = 0;
 
-  static #ask = ask_model.#no_question;
-  static #ans = null;
-
   static #answered = null;
   static #no_question = undefined;
+
+  static #ask = ask_model.#no_question;
+  static #ans = null;
 
   static #has_question(){
     return typeof(ask_model.#ask) === "string";
