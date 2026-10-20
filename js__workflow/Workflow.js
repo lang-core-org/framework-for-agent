@@ -12,8 +12,11 @@ class Workflow {
         Workflow.finish to finish the workflow chain
       rejected with an Error if execution fails
   */
-  /*abstract*/ workflow_this() {
-    return Promise.resolve(Workflow.finish);
+  /*abstract*/ workflow_this(param) {
+    return Workflow.passing(
+      Workflow.finish,
+      param
+    );
   }
 
 
@@ -24,7 +27,7 @@ class Workflow {
     (inherited definition included)
 
     `before` is a Promise:
-      fulfilled with no value if the workflow chain succeeds
+      fulfilled with value if the workflow chain succeeds
       rejected with an Error if the workflow chain fails
   */
   /*abstract*/ workflow_continuation(before){
@@ -45,9 +48,9 @@ class Workflow {
       on the prototype chain of THIS, from THIS up to Workflow,
       skipping classes that do not define it themselves
   */
-  static workflow_from(THIS){
+  static workflow_from(THIS,param){
     if(THIS instanceof Workflow){
-      return Workflow.#continuous(THIS);
+      return Workflow.#continuous(THIS,param);
     }else{
       return Promise.reject(
         Error(
@@ -57,17 +60,20 @@ class Workflow {
     }
   }
   
-  static #workflow_from(THIS,PROTO) {
-    return PROTO.workflow_this.call(THIS).then(
-      (signal) => {
-        switch(signal){
+  static #workflow_from(THIS,param,PROTO) {
+    return PROTO.workflow_this.call(THIS,param).then(
+      (workflow) => {
+        switch(workflow?.#signal){
           case Workflow.continuous:
-            return Workflow.#continuous(THIS,PROTO);
+            return Workflow.#continuous(
+              THIS,
+              workflow.#value,
+              PROTO);
           case Workflow.finish:
             return Workflow.#finish(
               THIS,
               PROTO,
-              Promise.resolve()
+              Promise.resolve(workflow.#value)
             );
           default:
             return Workflow.#finish(
@@ -113,15 +119,30 @@ class Workflow {
     Finish workflow execution successfully
   */
   static finish = Symbol("finish");
+
+  #signal = null;
+  #value = null;
   
-  static #continuous(THIS,PROTO = THIS){
+  /*
+  passing value with signal
+  */
+  static passing(signal,value){
+    let w = new Workflow();
+    w.#signal = signal;
+    w.#value = value;
+    return Promise.resovle(
+      Object.freeze(w)
+    );
+  }
+
+  static #continuous(THIS,param,PROTO = THIS){
     for(
       PROTO = Object.getPrototypeOf(PROTO);
       Object.hasOwn(PROTO, "workflow_this") === false;
       PROTO = Object.getPrototypeOf(PROTO)
     ){}
     
-    return Workflow.#workflow_from(THIS,PROTO);
+    return Workflow.#workflow_from(THIS,param,PROTO);
   }
   
   static #finish(THIS,PROTO,result){
