@@ -70,7 +70,13 @@ class Workflow {
   }
   
   static #workflow_from(THIS,param,PROTO) {
-    return PROTO.workflow_this.call(THIS,param).then(
+    let result;
+    try{
+      result = PROTO.workflow_this.call(THIS,param);
+    }catch(e){
+      result = Promise.reject(e);
+    }
+    return result.then(
       (V) => {
         switch(Workflow.#read_signal(V)){
           case Workflow.#sym_continuous:
