@@ -13,10 +13,7 @@ class Workflow {
       rejected with an Error if execution fails
   */
   /*abstract*/ workflow_this(param) {
-    return Workflow.passing(
-      Workflow.finish,
-      param
-    );
+    return Workflow.finish_with(param);
   }
 
 
@@ -49,7 +46,7 @@ class Workflow {
       skipping classes that do not define it themselves
   */
   static workflow_from(THIS,param){
-    if(THIS instanceof Workflow){
+    if(Workflow.#extends_Workflow(THIS)){
       return Workflow.#continuous(THIS,param);
     }else{
       return Promise.reject(
@@ -62,18 +59,19 @@ class Workflow {
   
   static #workflow_from(THIS,param,PROTO) {
     return PROTO.workflow_this.call(THIS,param).then(
-      (workflow) => {
-        switch(workflow?.#signal){
-          case Workflow.continuous:
+      (V) => {
+        switch(Workflow.#read_signal(V)){
+          case Workflow.#sym_continuous:
             return Workflow.#continuous(
               THIS,
-              workflow.#value,
-              PROTO);
-          case Workflow.finish:
+              V.#value,
+              PROTO
+            );
+          case Workflow.#sym_finish:
             return Workflow.#finish(
               THIS,
               PROTO,
-              Promise.resolve(workflow.#value)
+              Promise.resolve(V.#value)
             );
           default:
             return Workflow.#finish(
@@ -109,31 +107,33 @@ class Workflow {
     );
   }
   
-  /*
-    Continue workflow execution with the nearest superclass
-    that defines workflow_this itself
-  */
-  static continuous = Symbol("continuous");
   
-  /*
-    Finish workflow execution successfully
-  */
-  static finish = Symbol("finish");
+  static #sym_continuous = Symbol("continuous");
+  static #sym_finish = Symbol("finish");
 
   #signal = null;
   #value = null;
   
   /*
-  passing value with signal
+  continuous....
   */
-  static passing(signal,value){
-    let w = new Workflow();
-    w.#signal = signal;
-    w.#value = value;
-    return Promise.resolve(
-      Object.freeze(w)
+  static continuous_with(value){
+    return Workflow.#passing(
+      Workflow.#sym_continuous,
+      value
     );
   }
+
+  /*
+  finish....
+  */
+  static finish_with(value){
+    return Workflow.#passing(
+      Workflow.#sym_finish,
+      value
+    );
+  }
+  
 
   static #continuous(THIS,param,PROTO = THIS){
     for(
@@ -152,4 +152,29 @@ class Workflow {
     );
   }
 
+  static #extends_Workflow(value){
+    return (
+      (value instanceof Workflow) &&
+      (#signal in value) &&
+      (#value in value)
+    );
+  }
+
+  static #read_signal(value){
+    if(Workflow.#extends_Workflow(value)){
+      return value.#signal;
+    }else{
+      return null;
+    }
+  }
+
+  static #passing(signal,value){
+    let w = new Workflow();
+    w.#signal = signal;
+    w.#value = value;
+    return Promise.resolve(
+      Object.freeze(w)
+    );
+  }
+  
 }
