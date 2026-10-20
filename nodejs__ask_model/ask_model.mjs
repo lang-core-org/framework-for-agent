@@ -37,7 +37,7 @@ export class ask_model {
 
 
 
-  #T = null;
+  #T = ask_model.#idle;
 
   static #idle = undefined;
   static #placeholder = null;
