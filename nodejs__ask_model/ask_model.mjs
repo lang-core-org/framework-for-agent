@@ -1,4 +1,4 @@
-/*framework by me, cowork with Claude,Gemini*/
+/*framework by me, cowork with Claude, Gemini*/
 
 import { setTimeout } from "node:timers/promises";
 
@@ -8,6 +8,7 @@ export class ask_model {
   #fwrite;
   #ftimestamp;
   #path;
+  #wait;
 
   /*
     fread (path) => Promise
@@ -15,15 +16,22 @@ export class ask_model {
     fwrite (path,val) => Promise
       resolve timestamp if write val into path succeed
     ftimestamp (path) => Promise
-      reslove timestamp as last change time of path
+      reslove timestamp
     path
       a specified file
+    wait
+      time for per setTimeout, in ms
+    val
+      a JS value, like null, [1,2], ()=>{} ...
+    timestamp
+      time for last change of file
   */
-  constructor(fread,fwrite,ftimestamp,path){
+  constructor(fread,fwrite,ftimestamp,path,wait = 0){
     this.#fread = fread;
     this.#fwrite = fwrite;
     this.#ftimestamp = ftimestamp;
     this.#path = path;
+    this.#wait;
   }
 
 
@@ -38,13 +46,11 @@ export class ask_model {
       () => this.#T === null
     );
     this.#T = 0;
-    this.#T = this.#fwrite(this.#path,val);
+    this.#T = await this.#fwrite(this.#path,val);
     await ask_model.#wait_for(
-      async () => this.#T !== this.#ftimestamp(this.#path)
-
-
-
-      
+      async () => this.#T !== (
+        await this.#ftimestamp(this.#path)
+      )
     );
     let ans = await this.#fread(this.#path);
     this.#T = null;
@@ -52,8 +58,8 @@ export class ask_model {
   }
 
   static async #wait_for(fcond){
-    while(fcond() === false){
-      await setTimeout(0, undefined, { ref: false });
+    while(await fcond() === false){
+      await setTimeout(this.#wait, undefined, { ref: false });
     }
   }
 
