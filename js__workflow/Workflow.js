@@ -14,6 +14,10 @@ class Workflow {
           to finish the workflow chain
       Workflow.abort_with(error)
           to abort the workflow chain because of error
+      otherwise
+          the workflow chain fails with a RangeError
+    Throws
+       no recommend
   */
   /*abstract*/ workflow_this(param) {
     return Workflow.finish_with(param);
@@ -86,7 +90,7 @@ class Workflow {
               THIS,
               PROTO,
               Promise.reject(
-                Error("Invalid workflow signal")
+                RangeError("Invalid workflow signal")
               )
             );
         }
@@ -105,7 +109,7 @@ class Workflow {
             THIS,
             PROTO,
             Promise.reject(
-              Error(
+              TypeError(
                 "Workflow execution failed with a non-Error value"
               )
             )
