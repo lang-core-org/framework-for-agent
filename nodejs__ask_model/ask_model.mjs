@@ -11,7 +11,6 @@ export class ask_model {
   #path;
   #wait;
   #asking = false;
-  static #timeout = 16;
   
 /*
   fread, fwrite, fexist, fdelete are injected file-access functions;
@@ -38,9 +37,8 @@ export class ask_model {
   
   path: the file shared with the peer, initially absent
   wait: polling interval in ms
-  timeout: fixed at 16 polls per step, so a step times out after about 16 * wait ms
 */
-  constructor(fread,fwrite,fexist,fdelete,path,wait = 1000){
+  constructor(fread,fwrite,fexist,fdelete,path,wait = 200){
     this.#fread = fread;
     this.#fwrite = fwrite;
     this.#fexist = fexist;
@@ -52,9 +50,8 @@ export class ask_model {
 /*
   Write val to the file, wait for the peer to read it (file deleted),
   then wait for the peer's reply (file written), read it.
-  The file is deleted afterwards, also after a time-out.
+  The file is deleted afterwards.
   Concurrent calls are serialized.
-  Rejects with "time-out" if either wait exceeds the timeout.
 */
   async ask(val){
     
@@ -83,21 +80,9 @@ export class ask_model {
   }
 
   async #notice(is_exist){
-    let count = ask_model.#timeout;
-    let signal = undefined;
     await this.#wait_for(
-      async () => {
-        count = count - 1;
-        signal = (await this.#fexist(this.#path)) === is_exist;
-        return (count <= 0) || signal;
-      }
+      async () => (await this.#fexist(this.#path)) === is_exist
     );
-
-    if(signal === true){
-      return;
-    }else{
-      throw Error("time-out");
-    }
   }
 
 
@@ -126,7 +111,10 @@ export class ask_model {
       this.#asking = false;
     }catch(e){
       this.#asking = null;
-      throw e;
+      throw new Error(
+        "unable to release lock", 
+        { cause: e }
+      );
     }
   }
 
