@@ -10,7 +10,9 @@ export class ask_model {
   #fdelete;
   #path;
   #wait;
-
+  #asking = false;
+  static #timeout = 16;
+  
 /*
   fread, fwrite, fexist, fdelete are injected file-access functions;
   how val is serialized and where the file lives is up to them.
@@ -25,18 +27,18 @@ export class ask_model {
     removes path; succeeds silently if absent
 
   Contract:
-  - Atomic: a reader never observes a partial write,
-    and the peer must create its reply atomically.
+  - Atomic: a reader never observes a partial write.
+  - The peer must create its reply atomically.
 
-  Protocol (file existence is the handshake, both sides delete after reading):
-  1. ask: delete path, write question   -> file exists: peer's turn
-  2. peer: read, then delete path       -> file gone: received, thinking
-  3. peer: write reply atomically       -> file exists: reply ready
-  4. ask: read reply
-
-  path: the file shared with the peer
+  Protocol (the existence of path is the notification), in sequence:
+    path written : we have asked
+    path deleted : the peer has read
+    path written : the peer has answered
+    path deleted : we have read
+  
+  path: the file shared with the peer, initially absent
   wait: polling interval in ms
-  timeout: 16 polls per step, so a step times out after about 16 * wait ms
+  timeout: fixed at 16 polls per step, so a step times out after about 16 * wait ms
 */
   constructor(fread,fwrite,fexist,fdelete,path,wait = 1000){
     this.#fread = fread;
@@ -47,33 +49,18 @@ export class ask_model {
     this.#wait = wait;
   }
 
-
-
-  #timeout = 16;
-  #asking = false;
-
 /*
-  Write val to the file, wait for the peer to read it (file removed),
-  then wait for the peer's reply (file reappears), resolve with its content.
+  Write val to the file, wait for the peer to read it (file deleted),
+  then wait for the peer's reply (file written), read it.
+  The file is deleted afterwards, also after a time-out.
   Concurrent calls are serialized.
-  Rejects with "time-out" if either step exceeds the timeout.
+  Rejects with "time-out" if either wait exceeds the timeout.
 */
   async ask(val){
+    
+    await this.#unique_lock();
+    
     try{
-
-      await this.#wait_for(
-        () => {
-          if(this.#asking === false){
-            this.#asking = true;
-            return true;
-          }else{
-            return false;
-          }
-        }
-      );
-
-      await this.#fdelete(this.#path);
-      //notice asking
       await this.#fwrite(this.#path,val);
       //notice asked
 
@@ -83,11 +70,9 @@ export class ask_model {
       //be noticed answered
       
       return await this.#fread(this.#path);
-
+      
     } finally {
-
-      this.#asking = false;
-
+      await this.#release_lock();
     }
   }
 
@@ -98,7 +83,7 @@ export class ask_model {
   }
 
   async #notice(is_exist){
-    let count = this.#timeout;
+    let count = ask_model.#timeout;
     let signal = undefined;
     await this.#wait_for(
       async () => {
@@ -112,6 +97,36 @@ export class ask_model {
       return;
     }else{
       throw Error("time-out");
+    }
+  }
+
+
+
+  async #unique_lock(){
+    await this.#wait_for(
+      () => {
+        switch(this.#asking){
+          case true:
+            return false;
+          case false:
+            this.#asking = true;
+            return true;
+          default:
+            throw Error("unable to get unique lock");
+        }
+      }
+    );
+  }
+
+  async #release_lock(){
+    try{
+      await this.#fdelete(this.#path);
+      //notice asking
+      
+      this.#asking = false;
+    }catch(e){
+      this.#asking = null;
+      throw e;
     }
   }
 
