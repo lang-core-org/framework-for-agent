@@ -57,6 +57,119 @@ export class Synchronized{
   }
 
 
+
+
+
+
+
+
+  
+  static sync(
+    func,
+    wait = 0,
+    reset = () => {}
+  ){
+    let lock = Synchronized.#unlocked;
+    let getlock = () => lock;
+    let setlock = (L) => {lock = L;};
+    return async (...args){
+      let errors = [undefined,undefined,undefined];
+      try{
+        Synchronized.#acquire(
+          reset,
+          wait,
+          getlock,
+          setlock
+        );
+      }catch(e){
+        errors[0] = e;
+        throw new AggregateError(errors);
+      }
+
+      try{
+        return await func(args);
+      }catch(e){
+        errors[1] = new Error("excute func fails", { cause: e });
+      } finally {
+        await Synchronized.#release(
+          errors,
+          reset,
+          setlock
+        );
+      }
+    };
+  }
+
+
+  static async wait_for(wait,fcond){
+    while(await fcond() === false){
+      await setTimeout(
+        wait,
+        undefined,
+        { ref: true }
+      );
+    }
+  }
+
+  async #acquire(reset,wait,getlock,setlock){
+    await Synchronized.wait_for(
+      wait,
+      () => {
+        switch(getlock()){
+          case Synchronized.#locked:
+            return false;
+          case Synchronized.#broken:
+            try{
+              setlock( Synchronized.#locked );
+              await reset();
+              return true;
+            }catch(e){
+              setlock( Synchronized.#broken );
+              throw new Error(
+                "fail to get lock, can't reset",
+                { cause: e }
+              );
+            }
+          case Synchronized.#unlocked:
+            setlock( Synchronized.#locked );
+            return true;
+          default:
+            throw Error("unable to get lock");
+        }
+      }
+    );
+  }
+
+
+  static async #release(errors,reset,setlock){
+    try{
+      await reset();
+      setlock(Synchronized.#unlocked);
+      
+    }catch(e){
+      setlock(Synchronized.#broken);
+      
+      errors[2] = new Error(
+        "unable to release lock, can't reset",
+        { cause: e }
+      );
+    } finally {
+      if(errors.some(e => e !== undefined)){
+        throw new AggregateError(errors);
+      }else{
+        //pass
+      }
+    }
+  }
+
+
+
+
+
+
+
+
+
 /*
   Poll until fcond resolves to true
 */
