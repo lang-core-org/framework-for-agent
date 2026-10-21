@@ -25,13 +25,35 @@ export class Synchronized{
   The lock is released only if fafter succeeds;
   otherwise it is broken and every later sync rejects.
   Resolves with the result of fbody.
+  Throws AggregateError(
+      [
+          <before-locked>,
+          <locking>,
+          <after-locking>
+      ]
+  ), error in throws:
+      undefined NO ERROR in this step
+      Error ERROR threw in this step
 */
   async sync(fbody,fafter = () => {}, fbefore = () => {}){
-    await this.#acquire(fbefore);
+
+    let errors = [undefined,undefined,undefined];
+    
+    try{
+      await this.#acquire(fbefore);
+    }catch(e){
+      errors[0] = new Error("unable to get lock", { cause: e });;
+      throw new AggregateError(errors);
+    }
+
+    
     try{
       return await fbody();
+    } catch(e){
+      errors[1] = new Error("fbody failed", { cause: e });
+    };
     } finally {
-      await this.#release(fafter);
+      await this.#release(fafter,errors);
     }
   }
 
@@ -62,18 +84,24 @@ export class Synchronized{
     );
   }
 
-  async #release(fafter){
+  async #release(fafter,errors){
     try{
       await fafter();
-      
       this.#lock = Synchronized.#unlocked;
+      
     }catch(e){
       this.#lock = Synchronized.#broken;
       
-      throw new Error(
-        "unable to release lock", 
+      errors[2] = new Error(
+        "unable to release lock",
         { cause: e }
       );
+    } finally {
+      if(errors.some(e => e !== undefined)){
+        throw new AggregateError(errors);
+      }else{
+        //pass
+      }
     }
   }
   
