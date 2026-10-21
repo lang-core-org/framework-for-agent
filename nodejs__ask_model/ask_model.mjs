@@ -10,23 +10,26 @@ export class ask_model {
   #path;
   #wait;
 
-  /*
-    fread (path) => Promise
-      resolve as val read from path
-    fwrite (path,val) => Promise
-      resolve timestamp if write val into path succeed
-    ftimestamp (path) => Promise
-      reslove timestamp
-    path
-      a specified file
-    wait
-      time for per setTimeout, in ms
-    val
-      a JS value, like null, [1,2], ()=>{} ...
-    timestamp
-      time for last change of file
-    NOTE: fxxxx should be atomic
-  */
+/*
+  fread, fwrite, ftimestamp are injected file-access functions;
+  how val is serialized and where the file lives is up to them.
+
+  fread(path) => Promise<val>
+    resolves with the value currently stored in path
+  fwrite(path, val) => Promise<timestamp>
+    stores val in path, resolves with the file's timestamp after this write
+  ftimestamp(path) => Promise<timestamp>
+    resolves with the file's current timestamp
+
+  Contract:
+  - Atomic: a reader never observes a partial write.
+  - Every write, by us or by the peer, must change the timestamp.
+  - The timestamp from fwrite must equal what ftimestamp returns
+    right after, unless the peer has written in between.
+
+  path: the file shared with the peer
+  wait: polling interval in ms (0 = as fast as the event loop allows)
+*/
   constructor(fread,fwrite,ftimestamp,path,wait = 0){
     this.#fread = fread;
     this.#fwrite = fwrite;
@@ -41,11 +44,12 @@ export class ask_model {
 
   static #idle = undefined;
   static #placeholder = null;
-
-  /*
-     write val into file
-     wait model changed file atomic as answer
-  */
+  
+/*
+  Write val to the file, wait for the peer to change it, resolve with the new content.
+  Concurrent calls are serialized.
+  The peer's reply must change the file's timestamp.
+*/
   async ask(val){
     try{
       
