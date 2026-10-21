@@ -42,7 +42,7 @@ export class Synchronized{
     try{
       await this.#acquire(fbefore);
     }catch(e){
-      errors[0] = new Error("unable to get lock", { cause: e });;
+      errors[0] = new Error("unable to get lock", { cause: e });
       throw new AggregateError(errors);
     }
 
@@ -51,7 +51,6 @@ export class Synchronized{
       return await fbody();
     } catch(e){
       errors[1] = new Error("fbody failed", { cause: e });
-    };
     } finally {
       await this.#release(fafter,errors);
     }
