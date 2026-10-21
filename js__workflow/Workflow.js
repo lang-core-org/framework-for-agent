@@ -1,6 +1,6 @@
 /*framework by me, cowork with GPT, Claude*/
 
-class Workflow {
+export class Workflow {
   
   /*
     Execute this workflow
