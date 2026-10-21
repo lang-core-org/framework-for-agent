@@ -1,4 +1,4 @@
-/*framework by me, cowork with Claude, Gemini, DeepSeek*/
+/*framework by me, cowork with Claude, Gemini, DeepSeek, DSH*/
 
 import { Synchronized } from "../nodejs__synchronized/Synchronized.js";
 
@@ -8,7 +8,8 @@ export class ask_model {
   #fwrite;
   #fexist;
   #fdelete;
-  #path;
+  #question_path;
+  #answer_path;
   #sync;
   
 /*
@@ -37,12 +38,13 @@ export class ask_model {
   path: the file shared with the peer, initially absent
   wait: polling interval in ms
 */
-  constructor(fread,fwrite,fexist,fdelete,path,wait = 200){
+  constructor(fread,fwrite,fexist,fdelete,question_path,answer_path,wait = 200){
     this.#fread = fread;
     this.#fwrite = fwrite;
     this.#fexist = fexist;
     this.#fdelete = fdelete;
-    this.#path = path;
+    this.#question_path = question_path;
+    this.#answer_path = answer_path;
     this.#sync = new Synchronized(wait);
   }
 
@@ -58,24 +60,25 @@ export class ask_model {
     
     return await this.#sync.sync(
       async () => {
-        await this.#fwrite(this.#path,val);
-        //notice asked
+        await this.#notice(this.#question_path,false);
+        //be noticed previous question has been processing
+      
+        await this.#fwrite(this.#question_path,val);
         
-        await this.#notice(false);
-        //be noticed answering
-        await this.#notice(true);
-        //be noticed answered
+        await this.#notice(this.#answer_path,true);
+        //be noticed this answer is prepared
         
-        return await this.#fread(this.#path);
+        return await this.#fread(this.#answer_path);
       },
-      () =>  this.#fdelete(this.#path) 
-             //notice asking
+      () =>  this.#fdelete(this.#answer_path)
+             //notice answered has been read
+             
     );
   }
 
-  async #notice(is_exist){
+  async #notice(path,is_exist){
     await this.#sync.wait_for(
-      async () => (await this.#fexist(this.#path)) === is_exist
+      async () => (await this.#fexist(path)) === is_exist
     );
   }
   
