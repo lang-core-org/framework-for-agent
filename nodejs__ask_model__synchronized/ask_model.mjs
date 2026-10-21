@@ -1,6 +1,6 @@
 /*framework by me, cowork with Claude, Gemini, DeepSeek*/
 
-import { setTimeout } from "node:timers/promises";
+import { Synchronized } from "../nodejs__synchronized/Synchronized.js";
 
 export class ask_model {
 
@@ -9,8 +9,7 @@ export class ask_model {
   #fexist;
   #fdelete;
   #path;
-  #wait;
-  #asking = false;
+  #sync;
   
 /*
   fread, fwrite, fexist, fdelete are injected file-access functions;
@@ -44,7 +43,7 @@ export class ask_model {
     this.#fexist = fexist;
     this.#fdelete = fdelete;
     this.#path = path;
-    this.#wait = wait;
+    this.#sync = new Synchronized(wait);
   }
 
 /*
@@ -57,67 +56,27 @@ export class ask_model {
 */
   async ask(val){
     
-    await this.#unique_lock();
-    
-    try{
-      await this.#fwrite(this.#path,val);
-      //notice asked
-
-      await this.#notice(false);
-      //be noticed answering
-      await this.#notice(true);
-      //be noticed answered
-      
-      return await this.#fread(this.#path);
-      
-    } finally {
-      await this.#release_lock();
-    }
-  }
-
-  async #wait_for(fcond){
-    while(await fcond() === false){
-      await setTimeout(this.#wait, undefined, { ref: false });
-    }
+    return await this.#sync.sync(
+      async () => {
+        await this.#fwrite(this.#path,val);
+        //notice asked
+        
+        await this.#notice(false);
+        //be noticed answering
+        await this.#notice(true);
+        //be noticed answered
+        
+        return await this.#fread(this.#path);
+      },
+      () =>  this.#fdelete(this.#path) 
+             //notice asking
+    );
   }
 
   async #notice(is_exist){
-    await this.#wait_for(
+    await this.#sync.wait_for(
       async () => (await this.#fexist(this.#path)) === is_exist
     );
   }
-
-
-
-  async #unique_lock(){
-    await this.#wait_for(
-      () => {
-        switch(this.#asking){
-          case true:
-            return false;
-          case false:
-            this.#asking = true;
-            return true;
-          default:
-            throw Error("unable to get unique lock");
-        }
-      }
-    );
-  }
-
-  async #release_lock(){
-    try{
-      await this.#fdelete(this.#path);
-      //notice asking
-      
-      this.#asking = false;
-    }catch(e){
-      this.#asking = null;
-      throw new Error(
-        "unable to release lock", 
-        { cause: e }
-      );
-    }
-  }
-
+  
 }
