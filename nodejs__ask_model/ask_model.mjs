@@ -6,20 +6,21 @@ export class ask_model {
 
   #fread;
   #fwrite;
-  #ftimestamp;
+  #fexist;
+  #fdelete;
   #path;
   #wait;
-
 /*
   fread, fwrite, ftimestamp are injected file-access functions;
   how val is serialized and where the file lives is up to them.
 
   fread(path) => Promise<val>
     resolves with the value currently stored in path
-  fwrite(path, val) => Promise<timestamp>
+  fwrite(path, val) => Promise<???>
     stores val in path, resolves with the file's timestamp after this write
-  ftimestamp(path) => Promise<timestamp>
+  fexist(path) => Promise<bool>
     resolves with the file's current timestamp
+    true file exsit, false file absent
 
   Contract:
   - Atomic: a reader never observes a partial write.
@@ -29,21 +30,21 @@ export class ask_model {
 
   path: the file shared with the peer
   wait: polling interval in ms (0 = as fast as the event loop allows)
+  timeout: 16 * wait
 */
-  constructor(fread,fwrite,ftimestamp,path,wait = 0){
+  constructor(fread,fwrite,fexist,fdelete,path,wait = 0){
     this.#fread = fread;
     this.#fwrite = fwrite;
-    this.#ftimestamp = ftimestamp;
+    this.#fexist = fexist;
+    this.#fdelete = fdelete;
     this.#path = path;
     this.#wait = wait;
   }
 
 
 
-  #T = ask_model.#idle;
-
-  static #idle = undefined;
-  static #placeholder = null;
+  #timeout = 16;
+  #asking = false;
   
 /*
   Write val to the file, wait for the peer to change it, resolve with the new content.
@@ -55,8 +56,8 @@ export class ask_model {
       
       await this.#wait_for(
         () => {
-          if(this.#T === ask_model.#idle){
-            this.#T = ask_model.#placeholder;
+          if(this.#asking === false){
+            this.#asking = true;
             return true;
           }else{
             return false;
@@ -64,19 +65,18 @@ export class ask_model {
         }
       );
       
-      this.#T = await this.#fwrite(this.#path,val);
-      
-      await this.#wait_for(
-        async () => this.#T !== (
-          await this.#ftimestamp(this.#path)
-        )
-      );
-      
+      await this.#fdelete(this.#path);
+      await this.#fwrite(this.#path,val);
+
+      await this.#notice(false); 
+      //file has been read
+      await this.#notice(true);
+      //answered is arrived
       return await this.#fread(this.#path);
       
     } finally {
       
-      this.#T = ask_model.#idle;
+      this.#asking = false;
       
     }
   }
@@ -84,6 +84,24 @@ export class ask_model {
   async #wait_for(fcond){
     while(await fcond() === false){
       await setTimeout(this.#wait, undefined, { ref: false });
+    }
+  }
+
+  async #notice(is_exsit){
+    let count = this.#timeout;
+    let signal = undefined;
+    await this.#wait_for(
+      async () => {
+        count = count - 1;
+        signal = (await this.#fexist(this.#path)) === is_exsit;
+        return (count <= 0) || signal;
+      }
+    );
+    
+    if(signal === true){
+      return;
+    }else{
+      throw Error("time-out");
     }
   }
 
