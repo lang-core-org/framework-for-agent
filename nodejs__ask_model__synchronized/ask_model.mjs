@@ -76,6 +76,30 @@ export class ask_model {
     );
   }
 
+
+  async answer(f){
+    
+    return await this.#sync.sync(
+      async () => {
+        await this.#notice(this.#question_path,true);
+        //be noticed this question has arrived
+        
+        let ans = this.#fread(this.#question_path);
+        
+        await this.#fdelete(this.#question_path);
+        //notice question has been read
+
+        await this.#notice(this.#answer_path, false);
+        //be noticed previous answer has been read
+
+        await this.#fwrite(this.#answer_path,ans);
+      },
+      () =>  this.#fdelete(this.#answer_path)
+             //notice answered has been read
+             
+    );
+  }
+
   async #notice(path,is_exist){
     await this.#sync.wait_for(
       async () => (await this.#fexist(path)) === is_exist
