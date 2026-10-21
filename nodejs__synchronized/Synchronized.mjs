@@ -1,4 +1,4 @@
-/*framework by me, cowork with Claude*/
+/*framework by me, cowork with Claude, DSH*/
 
 import { setTimeout } from "node:timers/promises";
 export class Synchronized{
