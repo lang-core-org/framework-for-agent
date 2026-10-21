@@ -72,10 +72,10 @@ export class Synchronized{
     let lock = Synchronized.#unlocked;
     let getlock = () => lock;
     let setlock = (L) => {lock = L;};
-    return async (...args){
+    return async (...args) => {
       let errors = [undefined,undefined,undefined];
       try{
-        Synchronized.#acquire(
+        await Synchronized.#acquire(
           reset,
           wait,
           getlock,
@@ -87,7 +87,7 @@ export class Synchronized{
       }
 
       try{
-        return await func(args);
+        return await func(...args);
       }catch(e){
         errors[1] = new Error("excute func fails", { cause: e });
       } finally {
@@ -114,7 +114,7 @@ export class Synchronized{
   async #acquire(reset,wait,getlock,setlock){
     await Synchronized.wait_for(
       wait,
-      () => {
+      async () => {
         switch(getlock()){
           case Synchronized.#locked:
             return false;
