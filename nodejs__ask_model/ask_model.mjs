@@ -52,6 +52,8 @@ export class ask_model {
   then wait for the peer's reply (file written), read it.
   The file is deleted afterwards.
   Concurrent calls are serialized.
+  Waits indefinitely; there is no time-out.
+  If the final delete fails, the instance is locked and later calls reject.
 */
   async ask(val){
     
