@@ -64,12 +64,23 @@ export class Synchronized{
 
 
   
-  static sync(
+  static async sync(
     func,
     wait = 0,
     reset = () => {}
   ){
-    let lock = Synchronized.#unlocked;
+    let lock = 0;
+    
+    try{
+      await reset();
+      lock = Synchronized.#unlocked;
+    }catch(e){
+      lock = Synchronized.#broken;
+      throw new Error(
+        "unable to reset for init",
+        {cause: e}
+    }
+    
     let getlock = () => lock;
     let setlock = (L) => {lock = L;};
     return async (...args) => {
@@ -111,7 +122,7 @@ export class Synchronized{
     }
   }
 
-  async #acquire(reset,wait,getlock,setlock){
+  static async #acquire(reset,wait,getlock,setlock){
     await Synchronized.wait_for(
       wait,
       async () => {
