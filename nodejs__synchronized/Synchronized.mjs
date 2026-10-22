@@ -79,6 +79,7 @@ export class Synchronized{
       throw new Error(
         "unable to reset for init",
         {cause: e}
+      );
     }
     
     let getlock = () => lock;
