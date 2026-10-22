@@ -66,49 +66,27 @@ export class Synchronized{
   
   static async sync(
     func,
-    wait = 0,
-    reset = () => {}
+    reset,
+    wait = 0
   ){
-    let lock = 0;
-    
-    try{
-      await reset();
-      lock = Synchronized.#unlocked;
-    }catch(e){
-      lock = Synchronized.#broken;
-      throw new Error(
-        "unable to reset for init",
-        {cause: e}
-      );
-    }
-    
+    let lock = Synchronized.#unlocked;
     let getlock = () => lock;
     let setlock = (L) => {lock = L;};
+    
     return async (...args) => {
-      let errors = [undefined,undefined,undefined];
-      try{
-        await Synchronized.#acquire(
-          reset,
-          wait,
-          getlock,
-          setlock
-        );
-      }catch(e){
-        errors[0] = e;
-        throw new AggregateError(errors);
-      }
+      await Synchronized.#acquire(
+        reset,
+        wait,
+        getlock,
+        setlock
+      );
 
       try{
         return await func(...args);
-      }catch(e){
-        errors[1] = new Error("excute func fails", { cause: e });
       } finally {
-        await Synchronized.#release(
-          errors,
-          reset,
-          setlock
-        );
+        Synchronized.#release(setlock);
       }
+      
     };
   }
 
@@ -130,48 +108,28 @@ export class Synchronized{
         switch(getlock()){
           case Synchronized.#locked:
             return false;
-          case Synchronized.#broken:
+          case Synchronized.#unlocked:
             try{
               setlock( Synchronized.#locked );
               await reset();
               return true;
             }catch(e){
-              setlock( Synchronized.#broken );
+              setlock( Synchronized.#unlocked );
               throw new Error(
                 "fail to get lock, can't reset",
                 { cause: e }
               );
             }
-          case Synchronized.#unlocked:
-            setlock( Synchronized.#locked );
-            return true;
           default:
-            throw Error("unable to get lock");
+            throw new Error("unable to get lock");
         }
       }
     );
   }
 
 
-  static async #release(errors,reset,setlock){
-    try{
-      await reset();
-      setlock(Synchronized.#unlocked);
-      
-    }catch(e){
-      setlock(Synchronized.#broken);
-      
-      errors[2] = new Error(
-        "unable to release lock, can't reset",
-        { cause: e }
-      );
-    } finally {
-      if(errors.some(e => e !== undefined)){
-        throw new AggregateError(errors);
-      }else{
-        //pass
-      }
-    }
+  static #release(setlock){
+    setlock(Synchronized.#unlocked);
   }
 
 
