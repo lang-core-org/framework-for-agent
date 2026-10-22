@@ -10,10 +10,10 @@ export class ask_model {
   #fdelete;
   #question_path;
   #answer_path;
-  #sync;
+  #wait;
   #sync_ask;
-  #sync_answer;
-  
+  #sync_ans;
+  #answered = true; //whether ans successful
 /*
   fread, fwrite, fexist, fdelete are injected file-access functions;
   how val is serialized and where the files live is up to them.
@@ -48,9 +48,17 @@ export class ask_model {
     this.#fdelete = fdelete;
     this.#question_path = question_path;
     this.#answer_path = answer_path;
-    this.#sync = new Synchronized(wait);
-    this.#sync_ask = new Synchronized(wait);
-    this.#sync_answer = new Synchronized(wait);
+    this.#wait = wait;
+    this.#sync_ask = Synchronized.sync(
+      ask_model.#ask_func,
+      () => ask_model.#ask_reset(this),
+      wait
+    );
+    this.#sync_ans = Synchronized.sync(
+      ask_model.#ans_func,
+      () => ask_model.#ans_reset(this),
+      wait
+    );
   }
 
 /*
@@ -62,23 +70,7 @@ export class ask_model {
   If that delete fails, later calls to ask reject.
 */
   async ask(val){
-    
-    return await this.#sync_ask.sync(
-      async () => {
-        await this.#notice(this.#question_path,false);
-        //be noticed previous question has been read
-      
-        await this.#fwrite(this.#question_path,val);
-        
-        await this.#notice(this.#answer_path,true);
-        //be noticed this answer is prepared
-        
-        return await this.#fread(this.#answer_path);
-      },
-      () =>  this.#fdelete(this.#answer_path)
-             //notice answer has been read
-             
-    );
+    return this.#sync_ask(this,val);
   }
 
 
@@ -100,38 +92,45 @@ export class ask_model {
   Waits indefinitely; there is no time-out.
   If that delete fails, later calls to answer reject.
 */
-  /*reference*/ async answer(
-    write_ans = async (writer) => {}
-  ){
-    
-    return await this.#sync_answer.sync(
-      async () => {
-        await this.#notice(this.#answer_path, false);
-        //be noticed old answer has been read
-
-        await write_ans(
-          async (ans) => this.#fwrite(
-            this.#answer_path,
-            await ans //answer Q0
-          )
-        );
-        
-        await this.#notice(this.#question_path,true);
-        //be noticed new question is prepared
-        
-        return this.#fread(this.#question_path); //ask Q0
-         
-      },
-      () =>  this.#fdelete(this.#question_path)
-             //notice question has been read
-             
-    );
+  /*reference*/ async ans(fmodel){
+    return this.#sync_ans(this,fmodel);
   }
 
   async #notice(path,is_exist){
-    await this.#sync.wait_for(
+    await Synchronized.wait_for(
+      this.#wait,
       async () => (await this.#fexist(path)) === is_exist
     );
+  }
+
+  static async #ask_reset(self){
+    await self.#notice(self.#question_path,false);
+    await self.#fdelete(self.#answer_path);
+  }
+
+  static async #ask_func(self,val){
+    let question = await val;
+    await self.#fwrite(self.#question_path,question);
+    await self.#notice(self.#answer_path,true);
+    return await self.#fread(self.#answer_path);
+  }
+
+  static async #ans_reset(self){
+    if(self.#answered === true){
+      await self.#fdelete(self.#question_path);
+      self.#answered = false;
+    }else{
+      //passing
+    }
+    
+  }
+
+  static async #ans_func(self, fmodel){
+    await self.#notice(self.#question_path,true);
+    let question = await self.#fread(self.#question_path);
+    let answer = await fmodel(question);
+    await self.#fwrite(self.#answer_path,answer);
+    self.#answered = true;
   }
   
 }
