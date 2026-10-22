@@ -1,11 +1,24 @@
-/*framework by me, cowork with Claude, DSH*/
+/*framework by me, cowork with Claude, DSH, Gemini*/
 
 import { setTimeout } from "node:timers/promises";
 export class Synchronized{
   static #locked = true;
   static #unlocked = false;
-
   
+  
+  /*
+  func (args...) => T
+    A function that requires unique execution at any given time,
+    executed strictly after a successful reset
+  reset () => void
+    A function bound to func used to reset states prior to func execution.
+    Throws if it fails, which aborts and prevents func from executing
+  wait
+    Polling interval in milliseconds 
+    default = 0
+  Returns (args...) => T
+    A wrapped async function of func
+  */
   static sync(
     func,
     reset,
@@ -31,8 +44,13 @@ export class Synchronized{
       
     };
   }
-
-
+  
+  /*
+  wait
+    Polling interval in milliseconds
+  fcond () => boolean
+    A condition function polled until it returns true
+  */
   static async wait_for(wait,fcond){
     while(await fcond() === false){
       await setTimeout(
