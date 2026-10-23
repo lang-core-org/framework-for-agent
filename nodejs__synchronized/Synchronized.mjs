@@ -43,7 +43,7 @@ export class Synchronized{
   fcond () => boolean | Promise<boolean>
     A condition function polled until it returns true
   */
-  static async check_for(fcond){
+  static async spin_for(fcond){
     while(await fcond() === false){
       await setImmediate();
     }
@@ -51,7 +51,7 @@ export class Synchronized{
 
   /*
   wait
-    ....
+    Polling interval in milliseconds
   fcond () => boolean | Promise<boolean>
     A condition function polled until it returns true
   */
