@@ -12,7 +12,7 @@ export class Synchronized{
     A function bound to func used to reset states prior to func execution.
     Throws if it fails, which aborts and prevents func from executing
   Returns (args...) => Promise<T>
-    A wrapped async function of func
+    A wrapped function of func
   */
   static sync(
     func,
