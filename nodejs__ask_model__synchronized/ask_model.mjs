@@ -51,13 +51,11 @@ export class ask_model {
     this.#wait = wait;
     this.#sync_ask = Synchronized.sync(
       ask_model.#ask_func,
-      () => ask_model.#ask_reset(this),
-      wait
+      () => ask_model.#ask_reset(this)
     );
     this.#sync_ans = Synchronized.sync(
       ask_model.#ans_func,
-      () => ask_model.#ans_reset(this),
-      wait
+      () => ask_model.#ans_reset(this)
     );
   }
 
