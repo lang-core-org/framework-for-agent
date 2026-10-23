@@ -42,6 +42,7 @@ export class Synchronized{
   /* 
   fcond () => boolean | Promise<boolean>
     A condition function polled until it returns true
+  await setImmediate() between checks
   */
   static async spin_for(fcond){
     while(await fcond() === false){
