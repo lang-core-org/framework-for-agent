@@ -33,7 +33,7 @@ export class Synchronized{
       };
       
       let result = micro_task.then(then_func);
-      micro_task = result.catch(() => null);
+      micro_task = result.catch((_) => null);
       
       return result;
     };
