@@ -72,8 +72,6 @@ export class ask_model {
     return this.#sync_ask(this,val);
   }
 
-
-/*
 /*
   The peer side of ask.
   Delete the previous question if it was answered,
