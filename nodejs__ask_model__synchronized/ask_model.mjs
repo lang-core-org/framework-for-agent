@@ -30,15 +30,15 @@ export class ask_model {
   Contract:
   - Atomic: a reader never observes a partial write.
   - The peer must write its answer atomically
-    and delete the question after reading it.
+    and delete the question after answering it.
 
   Protocol (the existence of a file is the notification), in sequence:
     question written : we have asked
-    question deleted : the peer has read
     answer written   : the peer has answered
+    question deleted : the peer has answered it
     answer deleted   : we have read
 
-  question_path, answer_path: files shared with the peer, initially absent
+  question_path, answer_path: files shared with the peer, both exist at the start
   wait: polling interval in ms
 */
   constructor(fread,fwrite,fexist,fdelete,question_path,answer_path,wait = 200){
@@ -60,12 +60,13 @@ export class ask_model {
   }
 
 /*
-  Wait until the peer has read the previous question,
+  Wait until the peer has deleted the previous question,
+  delete the previous answer,
   write val as the question, wait for the answer, read it.
-  The answer is always deleted afterwards, also if a step failed.
+  val may be a Promise.
+  The answer file stays until the next call deletes it.
   Concurrent calls are serialized.
   Waits indefinitely; there is no time-out.
-  If that delete fails, later calls to ask reject.
 */
   async ask(val){
     return this.#sync_ask(this,val);
@@ -73,22 +74,19 @@ export class ask_model {
 
 
 /*
+/*
   The peer side of ask.
-  Wait until the previous answer has been read,
-  let write_ans write the answer to the previous question,
-  wait for the next question, read it.
-  The question is always deleted afterwards, also if a step failed.
-  After such an abnormal read the peer must still write an answer
-  (e.g. the error), otherwise the asker waits forever.
-  Resolves with the question.
+  Delete the previous question if it was answered,
+  wait for a question, read it,
+  write the result of fmodel(question) as the answer.
+  Resolves once the answer is written.
 
-  write_ans(writer) => Promise
-    call await writer(ans) to write the answer; ans may be a Promise.
-    The default does nothing, for the first call, which has nothing to answer.
+  fmodel(question) => answer | Promise<answer>
 
+  If any step fails, ans rejects and the question stays,
+  so the next call answers it again.
   Concurrent calls are serialized.
   Waits indefinitely; there is no time-out.
-  If that delete fails, later calls to answer reject.
 */
   /*reference*/ async ans(fmodel){
     return this.#sync_ans(this,fmodel);
