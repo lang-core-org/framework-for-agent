@@ -1,4 +1,4 @@
-/*framework by me*/
+/*framework by me,cowork with Claude*/
 export class typedskill{
    #type_foundation = [];
 }
@@ -15,7 +15,7 @@ class type{
    */
    constructor(name,...args){
        if(typeof(name) === "string" && 
-          args.every(a => a instanceof type){
+          args.every(a => a instanceof type)){
            this.#name = name;
            this.#args = args;
            this.#isdef = true;
@@ -27,7 +27,7 @@ class type{
    }
 
    //Map<typeA,typeB> where typeA extends typeB
-   static #type_extends = new Map;
+   static #type_extends = new Map();
    
    /*
      this type extends T
