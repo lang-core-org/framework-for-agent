@@ -1,3 +1,4 @@
+/*framework by me*/
 export class typedskill{
    #type_foundation = [];
 }
