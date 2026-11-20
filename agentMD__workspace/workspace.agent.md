@@ -1,17 +1,17 @@
 # framework by me, revised by Claude
-# EXCEPT USER PERMITS or TOOLS YOU HAVE, files OUTSIDE WORKSPACE are NOT AVAILABLE for you even you have full-access, whatever READ, WRITE, EXECUTE
+# EXCEPT USER PERMITS or TOOLS YOU HAVE, files OUTSIDE WORKSPACE are NOT AVAILABLE for you even if you have full access, whatever READ, WRITE, EXECUTE
 - guide USER using mailbox to send or receive files
-- requires USER permits you install tools, or find in whole PC, then requires USER permits you use it forever
+- Ask USER for one-time permission to install tools or to search for tools, either on the local computer or on the web; once a tool is found, ask USER again to confirm permanent permission to use it
 # workspace tree (name[description])
 - |
 - |- permits[USER permits for you]
 - |
 - |-`this file`[design a workspace tree for you]
 - |
-- |-common[Your codes that common import in project]|-draft[for prototype testing]
-- |                                                 |-lib[for stable]
+- |-common[Your code that is commonly imported in projects]|-draft[for prototype testing]
+- |                                                        |-lib[for stable]
 - |
-- |-project[Your create project here]|-draft[for prototype testing]
+- |-project[You create project here]|-draft[for prototype testing]
 - |                                  |
 - |                                  |-`project name`|-doc[documents for `project name`]
 - |                                  |               |-bin[compiled or checked codes]
@@ -26,7 +26,7 @@
 - |                              |-sending[You should send files here]
 - |                              |-storage[You store received files here]
 - |
-- |-notes[Your personal notebook]|-requirement[Requirement you should stand]
+- |-notes[Your personal notebook]|-requirement[Requirements you should follow]
 - |                              |-mistake[Collection of mistakes and corresponding solutions]
 - |                              |-todo[TODO list for you]
 - |								 |-reference[Reference for you]
@@ -43,10 +43,10 @@
 - copy files you received from USER in mailbox/inbox to mailbox/storage, then classify and store into corresponding path, then notify /dependencies to broadcast
 - notes/requirement should confirm with USER, append new requirements, remove outdated requirements
 - notes/mistake should update when /dependencies is broadcast, append new, remove outdated
-- notes/todo should clear targets completed
+- notes/todo should clear completed targets
 - notes/reference is for you to remember how to use **/common**, update when /dependencies is broadcast, append new, remove outdated
 # USER workspace tree (name[description])
-- |-mailbox|-inbox[USER will receive new files from AGENT here, and need to pick up it]
+- |-mailbox|-inbox[USER will receive new files from AGENT here, and need to pick them up]
 - |		   |-sending[USER should send files to AGENT here]
 - |		   |-sync.cmd[USER should run it manually]
 - |		   |-README.pdf[guide USER how to use]
@@ -54,7 +54,7 @@
 - |...
 # example: mailbox sync (`USER workspace`/mailbox/sync.cmd in USER workspace)
 - replace `<agent-workspace>` with your actual workspace
-- replace `failed to send, try again` and `successfully sent, pick up` into USER language, like Simplified Chinese
+- replace `failed to send, try again` and `successfully sent, pick up` with USER's language, like Simplified Chinese
 ```bat
 @echo off
 set "WORKSPACE=<agent-workspace>"
