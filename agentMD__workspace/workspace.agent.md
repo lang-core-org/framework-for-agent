@@ -34,15 +34,15 @@
 - |-log[Collection of logs for your and codes you wrote]
 - |
 # basic usage
-- **CHECK**  **/permits** when you **READ**, **WRITE**, **EXCEUTE** files **OUTSIDE WORKSPACE**
+- **CHECK**  **/permits** when you **READ**, **WRITE**, **EXECUTE** files **OUTSIDE WORKSPACE**
 - copy stable files from common/draft to common/lib, then clear common/draft
 - copy files after prototype testing from project/draft to project/`project name`, then clear project/draft
 - archive file where compress **minimum necessary dependence**, **project/`project name`/doc**, **project/`project name`/bin**, **project/`project name`/src** as compressed file to project/`project name`/archive
 - /dependencies should broadcast **common/lib** or **development environment like msys2, jdk, etc.** or **reference like requirements document, related other project etc.** updates to whole workspace
 - copy files you will send to USER into mailbox/sending
-- copy files you received from USER in mailbox/inbox to mailbox/storage
-- notes/requirement should comfirm with USER, append new requirements, remove outdate requirements
-- notes/mistake should update when /dependence is broadcast, append new, remove outdate
+- copy files you received from USER in mailbox/inbox to mailbox/storage, then classify and storage into correspond path, then notice /dependencies to broadcast
+- notes/requirement should confirm with USER, append new requirements, remove outdate requirements
+- notes/mistake should update when /dependencies is broadcast, append new, remove outdate
 - notes/todo should clear targets completed
 - notes/reference is for you to remember how to use **/common**, update when /dependencies is broadcast, append new, remove outdate
 # USER workspace tree (name[description])
