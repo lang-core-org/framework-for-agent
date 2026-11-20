@@ -1,7 +1,7 @@
-# framework by me
-# EXCEPT USER PERMITS or TOOLS YOUR HAVED, files OUTSIDE WORKSPACE are NOT AVALIABLE for you even you have full-access, whatever READ, WRITE, EXCEUTE
+# framework by me, revised by Claude
+# EXCEPT USER PERMITS or TOOLS YOUR HAVE, files OUTSIDE WORKSPACE are NOT AVAILABLE for you even you have full-access, whatever READ, WRITE, EXECUTE
 - guide USER using mailbox to send or received files
-- requires USER permits you install tools, or find in whole PC, then requires USER permits you use it for-ever
+- requires USER permits you install tools, or find in whole PC, then requires USER permits you use it forever
 # workspace tree (name[description])
 - |
 - |- permits[USER permits for you]
@@ -14,17 +14,17 @@
 - |-project[Your create project here]|-draft[for prototype testing]
 - |                                  |
 - |                                  |-`project name`|-doc[documents for `project name`]
-- |                                  |               |-bin[complied or checked codes]
+- |                                  |               |-bin[compiled or checked codes]
 - |                                  |               |-src[src code]
 - |                                  |               |-archive[archive for stable `project name`]
 - |                                  |
 - |                                  |- ...[more and more `project name`]
 - |
-- |-dependence[You record all depend chains]
+- |-dependencies[You record all dependencies]
 - |
 - |-mailbox[Your virtual mailbox]|-inbox[You will be receive new files here]
 - |                              |-sending[Your should send files here]
-- |                              |-storge[You storge received files here]
+- |                              |-storage[You storage received files here]
 - |
 - |-notes[Your personal notebook]|-requirement[Requirement you should stand]
 - |                              |-mistake[Collection of mistakes and correspond solutions]
@@ -37,14 +37,14 @@
 - **CHECK**  **/permits** when you **READ**, **WRITE**, **EXCEUTE** files **OUTSIDE WORKSPACE**
 - copy stable files from common/draft to common/lib, then clear common/draft
 - copy files after prototype testing from project/draft to project/`project name`, then clear project/draft
-- archive file where compress **minimum necessary dependence**, **project/`project name`/doc**, **project/`project name`/bin**, **project/`project name`/src** as compresed file to project/`project name`/archive
-- /dependence should broadcast **common/lib** or **devolpment enviroment like msys2, jdk, etc.** or **reference like requirements document, related other project etc.** updation to whole workspace
+- archive file where compress **minimum necessary dependence**, **project/`project name`/doc**, **project/`project name`/bin**, **project/`project name`/src** as compressed file to project/`project name`/archive
+- /dependencies should broadcast **common/lib** or **development environment like msys2, jdk, etc.** or **reference like requirements document, related other project etc.** updates to whole workspace
 - copy files you will send to USER into mailbox/sending
-- copy files you received from USER in mailbox/inbox to mailbox/storge
+- copy files you received from USER in mailbox/inbox to mailbox/storage
 - notes/requirement should comfirm with USER, append new requirements, remove outdate requirements
 - notes/mistake should update when /dependence is broadcast, append new, remove outdate
 - notes/todo should clear targets completed
-- notes/reference is for you to remember how to use **/common**, update when /dependence is broadcast, append new, remove outdate
+- notes/reference is for you to remember how to use **/common**, update when /dependencies is broadcast, append new, remove outdate
 # USER workspace tree (name[description])
 - |-mailbox|-inbox[USER will be receive new files from AGENT here, and need to pick up it]
 - |		   |-sending[USER should send files to AGENT here]
@@ -52,7 +52,7 @@
 - |		   |-README.pdf[guide user to howto use]
 - |
 - |...
-# mailbox sync (`USER workspace`/mailbox/sync.cmd in USER workspace)
+# example: mailbox sync (`USER workspace`/mailbox/sync.cmd in USER workspace)
 - replace `<agent-workspace>` into you actual workspace
 - replace `failed to sent, try again` and `succeed sent, pick up` into USER language, like Simplified Chinese
 ```bat
