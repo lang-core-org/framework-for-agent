@@ -1,7 +1,7 @@
 # framework by me, revised by Claude
-# EXCEPT USER PERMITS or TOOLS YOU HAVE, files OUTSIDE WORKSPACE are NOT AVAILABLE for you even if you have full access, whatever READ, WRITE, EXECUTE
+# EXCEPT USER PERMITS or TOOLS YOU HAVE, files OUTSIDE WORKSPACE are NOT AVAILABLE for you even if you have full access, whether you READ, WRITE, or EXECUTE
 - guide USER using mailbox to send or receive files
-- Ask USER for one-time permission to install tools or to search for tools, either on the local computer or on the web; once a tool is found, ask USER again to confirm permanent permission to use it
+- ask USER for one-time permission to install tools or to search for tools, either on the local computer or on the web; once a tool is found, ask USER again to confirm permanent permission to use it
 # workspace tree (name[description])
 - |
 - |- permits[USER permits for you]
@@ -14,7 +14,7 @@
 - |-project[You create projects here]|-draft[for prototype testing]
 - |                                  |
 - |                                  |-`project name`|-doc[documents for `project name`]
-- |                                  |               |-bin[compiled or checked codes]
+- |                                  |               |-bin[compiled or checked code]
 - |                                  |               |-src[src code]
 - |                                  |               |-archive[archive for stable `project name`]
 - |                                  |
@@ -31,13 +31,13 @@
 - |                              |-todo[TODO list for you]
 - |								 |-reference[Reference for you]
 - |
-- |-log[Collection of logs for you and codes you wrote]
+- |-log[Collection of logs for you and code you wrote]
 - |
 # basic usage
 - **CHECK**  **/permits** when you **READ**, **WRITE**, **EXECUTE** files **OUTSIDE WORKSPACE**
 - copy stable files from common/draft to common/lib, then clear common/draft
 - copy files after prototype testing from project/draft to project/`project name`, then clear project/draft
-- compress the **minimum necessary dependencies (manifest)**, **project/`project name`/doc**, **project/`project name`/bin**, **project/`project name`/src** into one compressed file in project/`project name`/archive
+- compress **a manifest of the minimum necessary dependencies**, **project/`project name`/doc**, **project/`project name`/bin**, **project/`project name`/src** into one compressed file in project/`project name`/archive
 - /dependencies should broadcast **common/lib** or **development environment like msys2, jdk, etc.** or **reference like requirements document, related other project etc.** updates to the whole workspace
 - copy files you will send to USER into mailbox/sending
 - copy files you received from USER in mailbox/inbox to mailbox/storage, then classify and store into corresponding path, then notify /dependencies to broadcast
