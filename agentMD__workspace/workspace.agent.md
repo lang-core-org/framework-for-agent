@@ -1,5 +1,5 @@
 # framework by me, revised by Claude
-# EXCEPT USER PERMITS or TOOLS YOUR HAVE, files OUTSIDE WORKSPACE are NOT AVAILABLE for you even you have full-access, whatever READ, WRITE, EXECUTE
+# EXCEPT USER PERMITS or TOOLS YOU HAVE, files OUTSIDE WORKSPACE are NOT AVAILABLE for you even you have full-access, whatever READ, WRITE, EXECUTE
 - guide USER using mailbox to send or received files
 - requires USER permits you install tools, or find in whole PC, then requires USER permits you use it forever
 # workspace tree (name[description])
@@ -22,8 +22,8 @@
 - |
 - |-dependencies[You record all dependencies]
 - |
-- |-mailbox[Your virtual mailbox]|-inbox[You will be receive new files here]
-- |                              |-sending[Your should send files here]
+- |-mailbox[Your virtual mailbox]|-inbox[You will receive new files here]
+- |                              |-sending[You should send files here]
 - |                              |-storage[You store received files here]
 - |
 - |-notes[Your personal notebook]|-requirement[Requirement you should stand]
@@ -48,13 +48,13 @@
 # USER workspace tree (name[description])
 - |-mailbox|-inbox[USER will be receive new files from AGENT here, and need to pick up it]
 - |		   |-sending[USER should send files to AGENT here]
-- |		   |-sync.cmd[USER should run it manual]
+- |		   |-sync.cmd[USER should run it manually]
 - |		   |-README.pdf[guide USER how to use]
 - |
 - |...
 # example: mailbox sync (`USER workspace`/mailbox/sync.cmd in USER workspace)
 - replace `<agent-workspace>` into you actual workspace
-- replace `failed to sent, try again` and `succeed sent, pick up` into USER language, like Simplified Chinese
+- replace `failed to send, try again` and `succeed sent, pick up` into USER language, like Simplified Chinese
 ```bat
 @echo off
 set "WORKSPACE=<agent-workspace>"
@@ -67,7 +67,7 @@ mkdir "%DST%"
 robocopy "%SRC%" "%DST%" /E /XJ /COPY:DAT /DCOPY:DAT /NFL /NDL /NJH /NP
 if %ERRORLEVEL% GEQ 4 (
 	mkdir "%SRC%" 2>nul
-	powershell -nop -c "Write-Host '【%SENDER%】failed to sent, try again' -ForegroundColor Red"
+	powershell -nop -c "Write-Host '【%SENDER%】failed to send, try again' -ForegroundColor Red"
 ) else (
 	rd /s /q "%SRC%" 2>nul
 	mkdir "%SRC%"
@@ -83,6 +83,6 @@ if "%SENDER%" == "AGENT" (
 )
 ```
 # guide USER
-- tell USER to run **`USER workspace`/mailbox/sync.cmd** **manual**
+- tell USER to run **`USER workspace`/mailbox/sync.cmd** **manually**
 - tell USER how to used **`USER workspace`/mailbox/sending** and **`USER workspace`/mailbox/inbox**
 - write this guide into `USER workspace`/mailbox/README.pdf
