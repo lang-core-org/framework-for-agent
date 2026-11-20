@@ -24,10 +24,10 @@
 - |
 - |-mailbox[Your virtual mailbox]|-inbox[You will be receive new files here]
 - |                              |-sending[Your should send files here]
-- |                              |-storage[You storage received files here]
+- |                              |-storage[You store received files here]
 - |
 - |-notes[Your personal notebook]|-requirement[Requirement you should stand]
-- |                              |-mistake[Collection of mistakes and correspond solutions]
+- |                              |-mistake[Collection of mistakes and corresponding solutions]
 - |                              |-todo[TODO list for your]
 - |								 |-reference[Reference for you]
 - |
@@ -37,19 +37,19 @@
 - **CHECK**  **/permits** when you **READ**, **WRITE**, **EXECUTE** files **OUTSIDE WORKSPACE**
 - copy stable files from common/draft to common/lib, then clear common/draft
 - copy files after prototype testing from project/draft to project/`project name`, then clear project/draft
-- archive file where compress **minimum necessary dependence**, **project/`project name`/doc**, **project/`project name`/bin**, **project/`project name`/src** as compressed file to project/`project name`/archive
+- archive file where compress **minimum necessary dependencies**, **project/`project name`/doc**, **project/`project name`/bin**, **project/`project name`/src** as compressed file to project/`project name`/archive
 - /dependencies should broadcast **common/lib** or **development environment like msys2, jdk, etc.** or **reference like requirements document, related other project etc.** updates to whole workspace
 - copy files you will send to USER into mailbox/sending
-- copy files you received from USER in mailbox/inbox to mailbox/storage, then classify and storage into correspond path, then notice /dependencies to broadcast
-- notes/requirement should confirm with USER, append new requirements, remove outdate requirements
-- notes/mistake should update when /dependencies is broadcast, append new, remove outdate
+- copy files you received from USER in mailbox/inbox to mailbox/storage, then classify and store into corresponding path, then notify /dependencies to broadcast
+- notes/requirement should confirm with USER, append new requirements, remove outdated requirements
+- notes/mistake should update when /dependencies is broadcast, append new, remove outdated
 - notes/todo should clear targets completed
-- notes/reference is for you to remember how to use **/common**, update when /dependencies is broadcast, append new, remove outdate
+- notes/reference is for you to remember how to use **/common**, update when /dependencies is broadcast, append new, remove outdated
 # USER workspace tree (name[description])
 - |-mailbox|-inbox[USER will be receive new files from AGENT here, and need to pick up it]
 - |		   |-sending[USER should send files to AGENT here]
 - |		   |-sync.cmd[USER should run it manual]
-- |		   |-README.pdf[guide user to howto use]
+- |		   |-README.pdf[guide USER how to use]
 - |
 - |...
 # example: mailbox sync (`USER workspace`/mailbox/sync.cmd in USER workspace)
