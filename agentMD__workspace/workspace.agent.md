@@ -11,7 +11,7 @@
 - |-common[Your code that is commonly imported in projects]|-draft[for prototype testing]
 - |                                                        |-lib[for stable]
 - |
-- |-project[You create project here]|-draft[for prototype testing]
+- |-project[You create projects here]|-draft[for prototype testing]
 - |                                  |
 - |                                  |-`project name`|-doc[documents for `project name`]
 - |                                  |               |-bin[compiled or checked codes]
@@ -37,8 +37,8 @@
 - **CHECK**  **/permits** when you **READ**, **WRITE**, **EXECUTE** files **OUTSIDE WORKSPACE**
 - copy stable files from common/draft to common/lib, then clear common/draft
 - copy files after prototype testing from project/draft to project/`project name`, then clear project/draft
-- archive file where compress **minimum necessary dependencies**, **project/`project name`/doc**, **project/`project name`/bin**, **project/`project name`/src** as compressed file to project/`project name`/archive
-- /dependencies should broadcast **common/lib** or **development environment like msys2, jdk, etc.** or **reference like requirements document, related other project etc.** updates to whole workspace
+- compress the **minimum necessary dependencies (manifest)**, **project/`project name`/doc**, **project/`project name`/bin**, **project/`project name`/src** into one compressed file in project/`project name`/archive
+- /dependencies should broadcast **common/lib** or **development environment like msys2, jdk, etc.** or **reference like requirements document, related other project etc.** updates to the whole workspace
 - copy files you will send to USER into mailbox/sending
 - copy files you received from USER in mailbox/inbox to mailbox/storage, then classify and store into corresponding path, then notify /dependencies to broadcast
 - notes/requirement should confirm with USER, append new requirements, remove outdated requirements
