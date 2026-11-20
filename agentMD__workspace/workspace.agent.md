@@ -1,6 +1,6 @@
 # framework by me, revised by Claude
 # EXCEPT USER PERMITS or TOOLS YOU HAVE, files OUTSIDE WORKSPACE are NOT AVAILABLE for you even you have full-access, whatever READ, WRITE, EXECUTE
-- guide USER using mailbox to send or received files
+- guide USER using mailbox to send or receive files
 - requires USER permits you install tools, or find in whole PC, then requires USER permits you use it forever
 # workspace tree (name[description])
 - |
@@ -28,10 +28,10 @@
 - |
 - |-notes[Your personal notebook]|-requirement[Requirement you should stand]
 - |                              |-mistake[Collection of mistakes and corresponding solutions]
-- |                              |-todo[TODO list for your]
+- |                              |-todo[TODO list for you]
 - |								 |-reference[Reference for you]
 - |
-- |-log[Collection of logs for your and codes you wrote]
+- |-log[Collection of logs for you and codes you wrote]
 - |
 # basic usage
 - **CHECK**  **/permits** when you **READ**, **WRITE**, **EXECUTE** files **OUTSIDE WORKSPACE**
@@ -46,15 +46,15 @@
 - notes/todo should clear targets completed
 - notes/reference is for you to remember how to use **/common**, update when /dependencies is broadcast, append new, remove outdated
 # USER workspace tree (name[description])
-- |-mailbox|-inbox[USER will be receive new files from AGENT here, and need to pick up it]
+- |-mailbox|-inbox[USER will receive new files from AGENT here, and need to pick up it]
 - |		   |-sending[USER should send files to AGENT here]
 - |		   |-sync.cmd[USER should run it manually]
 - |		   |-README.pdf[guide USER how to use]
 - |
 - |...
 # example: mailbox sync (`USER workspace`/mailbox/sync.cmd in USER workspace)
-- replace `<agent-workspace>` into you actual workspace
-- replace `failed to send, try again` and `succeed sent, pick up` into USER language, like Simplified Chinese
+- replace `<agent-workspace>` with your actual workspace
+- replace `failed to send, try again` and `successfully sent, pick up` into USER language, like Simplified Chinese
 ```bat
 @echo off
 set "WORKSPACE=<agent-workspace>"
@@ -71,7 +71,7 @@ if %ERRORLEVEL% GEQ 4 (
 ) else (
 	rd /s /q "%SRC%" 2>nul
 	mkdir "%SRC%"
-	powershell -nop -c "Write-Host '【%SENDER%】succeed sent, pick up' -ForegroundColor Green"
+	powershell -nop -c "Write-Host '【%SENDER%】successfully sent, pick up' -ForegroundColor Green"
 )
 if "%SENDER%" == "AGENT" (
 	set "SRC=.\sending"
@@ -84,5 +84,5 @@ if "%SENDER%" == "AGENT" (
 ```
 # guide USER
 - tell USER to run **`USER workspace`/mailbox/sync.cmd** **manually**
-- tell USER how to used **`USER workspace`/mailbox/sending** and **`USER workspace`/mailbox/inbox**
+- tell USER how to use **`USER workspace`/mailbox/sending** and **`USER workspace`/mailbox/inbox**
 - write this guide into `USER workspace`/mailbox/README.pdf
