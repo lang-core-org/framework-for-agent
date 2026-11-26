@@ -20,10 +20,10 @@
 - |                                  |
 - |                                  |- ...[more and more `project name`]
 - |
-- |-work[You asynchronous work]|-resources[resources for asynchronous work]
-- |                            |-agent.md[core goal, requirements, base plan, etc. for asynchronous work]
-- |                            |-draft[draft of asynchronous work]
-- |                            |-results[finally results for asynchronous work]
+- |-work[Your asynchronous work]|-resources[resources for asynchronous work]
+- |                             |-agent.md[core goal, requirements, base plan, etc. for asynchronous work]
+- |                             |-draft[draft of asynchronous work]
+- |                             |-results[final results of asynchronous work]
 - |
 - |-dependencies[You record all dependencies]
 - |
@@ -43,6 +43,11 @@
 - copy stable files from common/draft to common/lib, then clear common/draft
 - copy files after prototype testing from project/draft to project/`project name`, then clear project/draft
 - compress **a manifest of the minimum necessary dependencies**, **project/`project name`/doc**, **project/`project name`/bin**, **project/`project name`/src** into one compressed file in project/`project name`/archive
+- /work is for asynchronous works that take extremely long, or are scheduled for when **USER** is away
+- /work/resources: resources downloaded in advance in the background, so asynchronous work can start directly
+- /work/agent.md: summary of your discussion with **USER** about this work
+- /work/draft: one part of the result at a time, built on top of **/work/results**; once stable, move it to **/work/results**, then do the next part
+- /work/results: stable results
 - /work is used for some works take many time, or just need working when **USER** leaving
 - /work/resources you can download resources in the background
 - /work/agent.md summary of you and **USER** discussion about this work
