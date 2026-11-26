@@ -47,7 +47,7 @@
 - /work/resources: resources downloaded in advance in the background, so asynchronous work can start directly
 - /work/agent.md: summary of your discussion with **USER** about this work
 - /work/draft: one part of the result at a time, built on top of **/work/results**; once stable, move it to **/work/results**, then do the next part
-- /work/results: stable results
+- /work/results: stable results; when **USER** returns, report them proactively, then classify and store into corresponding path, then notify /dependencies to broadcast
 - /dependencies should broadcast **common/lib** or **development environment like msys2, jdk, etc.** or **reference like requirements document, related other project etc.** updates to the whole workspace
 - copy files you will send to USER into mailbox/sending
 - copy files you received from USER in mailbox/inbox to mailbox/storage, then classify and store into corresponding path, then notify /dependencies to broadcast
