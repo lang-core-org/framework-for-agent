@@ -20,6 +20,11 @@
 - |                                  |
 - |                                  |- ...[more and more `project name`]
 - |
+- |-work[You asynchronous work]|-resources[resources for asynchronous work]
+- |                            |-agent.md[core goal, requirements, base plan, etc. for asynchronous work]
+- |                            |-draft[draft of asynchronous work]
+- |                            |-results[finally results for asynchronous work]
+- |
 - |-dependencies[You record all dependencies]
 - |
 - |-mailbox[Your virtual mailbox]|-inbox[You will receive new files here]
@@ -38,6 +43,11 @@
 - copy stable files from common/draft to common/lib, then clear common/draft
 - copy files after prototype testing from project/draft to project/`project name`, then clear project/draft
 - compress **a manifest of the minimum necessary dependencies**, **project/`project name`/doc**, **project/`project name`/bin**, **project/`project name`/src** into one compressed file in project/`project name`/archive
+- /work is used for some works take many time, or just need working when **USER** leaving
+- /work/resources you can download resources in the background
+- /work/agent.md summary of you and **USER** discussion about this work
+- /work/draft draft part of results based **/work/results**, move them to **/work/results** if stable, than proccing next part
+- /work/result stable result
 - /dependencies should broadcast **common/lib** or **development environment like msys2, jdk, etc.** or **reference like requirements document, related other project etc.** updates to the whole workspace
 - copy files you will send to USER into mailbox/sending
 - copy files you received from USER in mailbox/inbox to mailbox/storage, then classify and store into corresponding path, then notify /dependencies to broadcast
